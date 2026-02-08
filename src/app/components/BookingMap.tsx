@@ -1,18 +1,23 @@
-import { useRef, useEffect, useState } from 'react';
-import { loadGoogleMapsScript, getGoogleMapsApiKey, isGoogleMapsAvailable } from '../lib/google-maps';
+import { useRef, useEffect } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import type { LatLon } from '../contexts/BookingContext';
 
-const SWISS_CENTER = { lat: 46.8182, lng: 8.2275 };
+const SWISS_CENTER: [number, number] = [46.8182, 8.2275];
 const DEFAULT_ZOOM = 8;
 
+// Fix default marker icons in Leaflet when using bundlers
+delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
+
 interface BookingMapProps {
-  /** Subtle background mode: dim/blur overlay */
   background?: boolean;
-  /** From position – when set with to, route is drawn */
   from?: LatLon | null;
-  /** To position */
   to?: LatLon | null;
-  /** Route polyline points (from Directions API or simple A–B) */
   routePoints?: { lat: number; lng: number }[];
   className?: string;
 }
@@ -25,166 +30,99 @@ export function BookingMap({
   className = '',
 }: BookingMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<google.maps.Marker[]>([]);
-  const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
-  const [ready, setReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<L.Marker[]>([]);
+  const polylineRef = useRef<L.Polyline | null>(null);
 
   useEffect(() => {
-    const apiKey = getGoogleMapsApiKey();
-    if (!apiKey) {
-      setError('Map unavailable (no API key)');
-      return;
-    }
-    if (isGoogleMapsAvailable()) {
-      setReady(true);
-      return;
-    }
-    loadGoogleMapsScript(apiKey)
-      .then(() => setReady(true))
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load map'));
-  }, []);
+    if (!containerRef.current) return;
 
-  useEffect(() => {
-    if (!ready || !containerRef.current || !window.google?.maps) return;
-
-    const map = new window.google.maps.Map(containerRef.current, {
+    const map = L.map(containerRef.current, {
       center: SWISS_CENTER,
       zoom: DEFAULT_ZOOM,
-      disableDefaultUI: true,
       zoomControl: !background,
-      styles: background
-        ? [
-            { featureType: 'all', elementType: 'all', stylers: [{ saturation: 0.2 }, { lightness: 30 }] },
-            { featureType: 'water', stylers: [{ visibility: 'simplified' }] },
-          ]
-        : undefined,
-      gestureHandling: background ? 'none' : 'auto',
-      draggable: !background,
-      scrollwheel: !background,
+      dragging: !background,
+      scrollWheelZoom: !background,
+      doubleClickZoom: !background,
     });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map);
+
+    if (background) {
+      map.dragging.disable();
+      map.touchZoom.disable();
+      map.doubleClickZoom.disable();
+      map.scrollWheelZoom.disable();
+    }
 
     mapRef.current = map;
     return () => {
-      markersRef.current.forEach((m) => m.setMap(null));
+      markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
-      if (directionsRendererRef.current) {
-        directionsRendererRef.current.setMap(null);
-        directionsRendererRef.current = null;
-      }
+      polylineRef.current?.remove();
+      map.remove();
       mapRef.current = null;
     };
-  }, [ready, background]);
+  }, [background]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !ready) return;
+    if (!map) return;
 
-    markersRef.current.forEach((m) => m.setMap(null));
+    markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
+    polylineRef.current?.remove();
 
-    const bounds = new window.google.maps.LatLngBounds();
+    const bounds: L.LatLngLiteral[] = [];
 
     if (from) {
-      const m = new window.google.maps.Marker({
-        position: from,
-        map,
-        title: 'Pickup',
-        icon: undefined,
-      });
+      const m = L.marker([from.lat, from.lng]).addTo(map);
       markersRef.current.push(m);
-      bounds.extend(from);
+      bounds.push({ lat: from.lat, lng: from.lng });
     }
     if (to) {
-      const m = new window.google.maps.Marker({
-        position: to,
-        map,
-        title: 'Dropoff',
-        icon: undefined,
-      });
+      const m = L.marker([to.lat, to.lng]).addTo(map);
       markersRef.current.push(m);
-      bounds.extend(to);
-    }
-
-    if (directionsRendererRef.current) {
-      directionsRendererRef.current.setMap(null);
-      directionsRendererRef.current = null;
+      bounds.push({ lat: to.lat, lng: to.lng });
     }
 
     if (routePoints && routePoints.length >= 2) {
-      const path = routePoints.map((p) => ({ lat: p.lat, lng: p.lng }));
-      const poly = new window.google.maps.Polyline({
-        path,
-        geodesic: true,
-        strokeColor: '#d4af37',
-        strokeOpacity: 0.9,
-        strokeWeight: 4,
-        map,
-      });
-      path.forEach((p) => bounds.extend(p));
+      const latlngs: [number, number][] = routePoints.map((p) => [p.lat, p.lng]);
+      const poly = L.polyline(latlngs, {
+        color: '#d4af37',
+        weight: 4,
+        opacity: 0.9,
+      }).addTo(map);
+      polylineRef.current = poly;
+      latlngs.forEach((p) => bounds.push({ lat: p[0], lng: p[1] }));
     } else if (from && to) {
-      const service = new window.google.maps.DirectionsService();
-      service.route(
-        {
-          origin: from,
-          destination: to,
-          travelMode: window.google.maps.TravelMode.DRIVING,
-        },
-        (result, status) => {
-          if (status === window.google.maps.DirectionsStatus.OK && result) {
-            const dr = new window.google.maps.DirectionsRenderer({
-              map,
-              suppressMarkers: true,
-              polylineOptions: {
-                strokeColor: '#d4af37',
-                strokeWeight: 4,
-              },
-            });
-            dr.setDirections(result);
-            directionsRendererRef.current = dr;
-            const r = result.routes[0];
-            if (r?.bounds) map.fitBounds(r.bounds);
-          } else {
-            const line = new window.google.maps.Polyline({
-              path: [from, to],
-              geodesic: true,
-              strokeColor: '#d4af37',
-              strokeWeight: 4,
-              map,
-            });
-            bounds.extend(from);
-            bounds.extend(to);
-            if (bounds.getNorthEast().lat() !== bounds.getSouthWest().lat()) map.fitBounds(bounds);
-          }
-        }
-      );
-    } else if (from || to) {
-      if (bounds.getNorthEast().lat() !== bounds.getSouthWest().lat()) map.fitBounds(bounds);
-      else map.setCenter(from || to || SWISS_CENTER);
+      const line = L.polyline(
+        [
+          [from.lat, from.lng],
+          [to.lat, to.lng],
+        ],
+        { color: '#d4af37', weight: 4, opacity: 0.9 }
+      ).addTo(map);
+      polylineRef.current = line;
+      bounds.push({ lat: from.lat, lng: from.lng }, { lat: to.lat, lng: to.lng });
     }
-  }, [ready, from, to, routePoints]);
 
-  if (error) {
-    return (
-      <div
-        className={`bg-muted/30 flex items-center justify-center rounded-lg ${className}`}
-        aria-hidden
-      >
-        <span className="text-muted-foreground text-sm">Map unavailable</span>
-      </div>
-    );
-  }
+    if (bounds.length >= 2) {
+      map.fitBounds(bounds as L.LatLngBoundsLiteral, { padding: [20, 20], maxZoom: 14 });
+    } else if (bounds.length === 1) {
+      map.setView(bounds[0], 12);
+    }
+  }, [from, to, routePoints]);
 
   return (
     <div
-      className={`relative overflow-hidden rounded-lg ${background ? 'brightness-90 contrast-75' : ''} ${className}`}
+      className={`relative overflow-hidden rounded-lg ${background ? 'brightness-90 contrast-[0.95]' : ''} ${className}`}
       style={{ minHeight: background ? 280 : 320 }}
     >
-      <div ref={containerRef} className="absolute inset-0 w-full h-full" aria-hidden />
-      {background && (
-        <div className="absolute inset-0 bg-black/20 pointer-events-none" aria-hidden />
-      )}
+      <div ref={containerRef} className="absolute inset-0 w-full h-full z-0" aria-hidden />
+      {background && <div className="absolute inset-0 bg-black/20 pointer-events-none z-10" aria-hidden />}
     </div>
   );
 }

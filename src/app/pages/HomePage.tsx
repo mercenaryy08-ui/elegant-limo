@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { CalendarIcon, MapPin, Clock, Users } from 'lucide-react';
 import { format } from 'date-fns';
@@ -13,7 +13,20 @@ import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popove
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { AddressAutocomplete } from '../components/AddressAutocomplete';
 import { BookingMap } from '../components/BookingMap';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
+import { setOpsAuthenticated } from '../lib/ops-auth';
 import { toast } from 'sonner';
+
+const OPS_PIN = '21220';
+const RAPID_CLICK_WINDOW_MS = 2000;
+const RAPID_CLICK_COUNT = 5;
 
 interface BookingFormData {
   from: string;
@@ -29,6 +42,40 @@ export function HomePage() {
   const t = useTranslations('en');
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [opsPinOpen, setOpsPinOpen] = useState(false);
+  const [opsPinValue, setOpsPinValue] = useState('');
+  const [opsPinError, setOpsPinError] = useState('');
+  const rapidClickCount = useRef(0);
+  const rapidClickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleElegantLimoClick = useCallback(() => {
+    rapidClickCount.current += 1;
+    if (rapidClickTimer.current) clearTimeout(rapidClickTimer.current);
+    if (rapidClickCount.current >= RAPID_CLICK_COUNT) {
+      rapidClickCount.current = 0;
+      setOpsPinOpen(true);
+      setOpsPinValue('');
+      setOpsPinError('');
+    } else {
+      rapidClickTimer.current = setTimeout(() => {
+        rapidClickCount.current = 0;
+        rapidClickTimer.current = null;
+      }, RAPID_CLICK_WINDOW_MS);
+    }
+  }, []);
+
+  const handleOpsPinSubmit = useCallback(() => {
+    if (opsPinValue.trim() === OPS_PIN) {
+      setOpsAuthenticated();
+      setOpsPinOpen(false);
+      setOpsPinValue('');
+      setOpsPinError('');
+      navigate('/ops');
+    } else {
+      setOpsPinError('Wrong PIN');
+    }
+  }, [opsPinValue, navigate]);
 
   const {
     register,
@@ -42,6 +89,7 @@ export function HomePage() {
       from: bookingData.from,
       to: bookingData.to,
       passengers: 1,
+      time: '09:00',
     },
   });
 
@@ -199,9 +247,10 @@ export function HomePage() {
                       <CalendarIcon className="w-4 h-4 text-[#d4af37]" />
                       {t.home.form.date}
                     </Label>
-                    <Popover>
+                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                       <PopoverTrigger asChild>
                         <Button
+                          type="button"
                           variant="outline"
                           className="w-full h-14 justify-start text-left font-normal border-[#d4af37]/30 hover:border-[#d4af37] hover:bg-[#fafafa] bg-[#fafafa]"
                         >
@@ -213,12 +262,14 @@ export function HomePage() {
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
                         <Calendar
                           mode="single"
                           selected={selectedDate}
-                          onSelect={setSelectedDate}
-                          initialFocus
+                          onSelect={(date) => {
+                            setSelectedDate(date);
+                            if (date) setCalendarOpen(false);
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
@@ -236,6 +287,7 @@ export function HomePage() {
                       {...register('time', {
                         required: t.home.validation.requiredField,
                       })}
+                      defaultValue="09:00"
                       className="h-14 text-base border-[#d4af37]/30 focus:border-[#d4af37] focus:ring-[#d4af37] bg-[#fafafa]"
                       aria-invalid={errors.time ? 'true' : 'false'}
                     />
@@ -299,12 +351,53 @@ export function HomePage() {
           </div>
 
           <footer className="mt-16 pt-8 border-t border-[#d4af37]/10 text-center text-sm text-muted-foreground">
-            <Link to="/ops" className="text-[#d4af37] hover:underline">Ops dashboard</Link>
-            <span className="mx-2">·</span>
-            <Link to="/calendar" className="text-[#d4af37] hover:underline">Calendar</Link>
+            <button
+              type="button"
+              onClick={handleElegantLimoClick}
+              className="text-[#0a0a0a] font-medium hover:text-[#d4af37] transition-colors cursor-pointer bg-transparent border-none"
+              aria-label="Elegant Limo"
+            >
+              Elegant Limo
+            </button>
           </footer>
         </div>
       </section>
+
+      <Dialog open={opsPinOpen} onOpenChange={setOpsPinOpen}>
+        <DialogContent className="border-[#d4af37]/30 sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Enter PIN</DialogTitle>
+            <DialogDescription>Enter the PIN to access the ops dashboard.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="ops-pin">PIN</Label>
+            <Input
+              id="ops-pin"
+              type="password"
+              inputMode="numeric"
+              autoComplete="off"
+              value={opsPinValue}
+              onChange={(e) => {
+                setOpsPinValue(e.target.value);
+                setOpsPinError('');
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && handleOpsPinSubmit()}
+              className="border-[#d4af37]/30"
+              placeholder="•••••"
+            />
+            {opsPinError && <p className="text-sm text-destructive">{opsPinError}</p>}
+          </div>
+          <DialogFooter>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-[#d4af37] text-white h-10 px-4 hover:bg-[#b8941f]"
+              onClick={handleOpsPinSubmit}
+            >
+              Continue
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
