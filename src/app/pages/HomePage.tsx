@@ -23,6 +23,7 @@ import {
 } from '../components/ui/dialog';
 import { setOpsAuthenticated } from '../lib/ops-auth';
 import { toast } from 'sonner';
+import { fetchOsrmRoute } from '../lib/route-utils';
 
 const OPS_PIN = '21220';
 const RAPID_CLICK_WINDOW_MS = 2000;
@@ -43,6 +44,7 @@ export function HomePage() {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [routePoints, setRoutePoints] = useState<{ lat: number; lng: number }[]>([]);
   const [opsPinOpen, setOpsPinOpen] = useState(false);
   const [opsPinValue, setOpsPinValue] = useState('');
   const [opsPinError, setOpsPinError] = useState('');
@@ -86,16 +88,29 @@ export function HomePage() {
     watch,
   } = useForm<BookingFormData>({
     defaultValues: {
-      from: bookingData.from,
-      to: bookingData.to,
-      passengers: 1,
-      time: '09:00',
+      from: bookingData.from || '',
+      to: bookingData.to || '',
+      passengers: bookingData.passengers ?? 1,
+      time: bookingData.time || '09:00',
     },
   });
 
   const watchFrom = watch('from');
   const watchTo = watch('to');
+  const watchTime = watch('time');
   const watchPassengers = watch('passengers');
+
+  // Sync form from bookingData (so from/to/date/time are editable and show current values)
+  useEffect(() => {
+    if (bookingData.from) setValue('from', bookingData.from);
+    if (bookingData.to) setValue('to', bookingData.to);
+    if (bookingData.time) setValue('time', bookingData.time);
+    if (bookingData.passengers) setValue('passengers', bookingData.passengers);
+    if (bookingData.date) {
+      const d = new Date(bookingData.date);
+      if (!isNaN(d.getTime())) setSelectedDate(d);
+    }
+  }, [bookingData.from, bookingData.to, bookingData.date, bookingData.time, bookingData.passengers, setValue]);
 
   // Pre-fill from Hostinger hero (URL params: from, to, date, fromLat, fromLon, toLat, toLon)
   useEffect(() => {
@@ -136,6 +151,58 @@ export function HomePage() {
     }
     if (Object.keys(updates).length) updateBookingData(updates);
   }, [setValue, updateBookingData]);
+
+  // Fetch road route for background map when we have both coords
+  useEffect(() => {
+    const from = bookingData.fromLatLon;
+    const to = bookingData.toLatLon;
+    if (!from || !to) {
+      setRoutePoints([]);
+      return;
+    }
+    let cancelled = false;
+    fetchOsrmRoute(from, to).then((info) => {
+      if (!cancelled && info.routePoints?.length) setRoutePoints(info.routePoints);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [bookingData.fromLatLon, bookingData.toLatLon]);
+
+  const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+  const isDirty =
+    (watchFrom ?? '') !== (bookingData.from || '') ||
+    (watchTo ?? '') !== (bookingData.to || '') ||
+    dateStr !== (bookingData.date || '') ||
+    (watchTime ?? '') !== (bookingData.time || '') ||
+    (watchPassengers ?? 1) !== (bookingData.passengers ?? 1);
+
+  const handleUpdate = () => {
+    const fromVal = (watchFrom ?? '').toString().trim();
+    const toVal = (watchTo ?? '').toString().trim();
+    if (!fromVal || !toVal) {
+      toast.error(t.home.validation.requiredField);
+      return;
+    }
+    if (!selectedDate) {
+      toast.error(t.home.validation.invalidDate);
+      return;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate < today) {
+      toast.error(t.home.validation.pastDate);
+      return;
+    }
+    updateBookingData({
+      from: fromVal,
+      to: toVal,
+      date: dateStr,
+      time: watchTime || '09:00',
+      passengers: watchPassengers ?? 1,
+    });
+    toast.success('Booking details updated');
+  };
 
   const onSubmit = async (data: BookingFormData) => {
     const fromVal = (data.from ?? watchFrom ?? '').toString().trim();
@@ -199,6 +266,7 @@ export function HomePage() {
             background
             from={bookingData.fromLatLon ?? undefined}
             to={bookingData.toLatLon ?? undefined}
+            routePoints={routePoints.length >= 2 ? routePoints : undefined}
             className="w-full h-full min-h-[280px]"
           />
         </div>
@@ -327,7 +395,6 @@ export function HomePage() {
                       {...register('time', {
                         required: t.home.validation.requiredField,
                       })}
-                      defaultValue="09:00"
                       className="h-14 text-base border-[#d4af37]/30 focus:border-[#d4af37] focus:ring-[#d4af37] bg-[#fafafa]"
                       aria-invalid={errors.time ? 'true' : 'false'}
                     />
@@ -362,14 +429,27 @@ export function HomePage() {
                   </Select>
                 </div>
 
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  className="w-full h-14 text-lg bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white shadow-lg transition-all duration-300 hover:shadow-xl"
-                  disabled={isLoading}
-                >
-                  {isLoading ? t.common.loading : 'Book'}
-                </Button>
+                {/* Update (when dirty) + Book */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {isDirty && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 h-14 text-base border-[#d4af37] text-[#b8941f] hover:bg-[#f4e4b7]/20"
+                      onClick={handleUpdate}
+                      disabled={isLoading}
+                    >
+                      Update
+                    </Button>
+                  )}
+                  <Button
+                    type="submit"
+                    className={`h-14 text-lg bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white shadow-lg transition-all duration-300 hover:shadow-xl ${isDirty ? 'flex-1' : 'w-full'}`}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? t.common.loading : 'Book'}
+                  </Button>
+                </div>
               </form>
             </div>
           </div>
