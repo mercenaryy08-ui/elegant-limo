@@ -81,18 +81,21 @@ export function HomePage() {
     }
   }, [opsPinValue, navigate]);
 
+  const initialTime = bookingData.time || '09:00';
+
   const {
     register,
     formState: { errors },
     setValue,
     setError,
     watch,
+    getValues,
   } = useForm<BookingFormData>({
     defaultValues: {
       from: bookingData.from || '',
       to: bookingData.to || '',
       passengers: bookingData.passengers ?? 1,
-      time: bookingData.time || '09:00',
+      time: initialTime,
     },
   });
 
@@ -140,6 +143,10 @@ export function HomePage() {
       const lat = parseFloat(toLat);
       const lng = parseFloat(toLon);
       if (!isNaN(lat) && !isNaN(lng)) updates.toLatLon = { lat, lng };
+    }
+    // Sync the initial time to context so isDirty starts as false
+    if (!bookingData.time) {
+      updates.time = initialTime;
     }
     if (Object.keys(updates).length) updateBookingData(updates);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -190,46 +197,81 @@ export function HomePage() {
 
   const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
 
-  const onSubmit = async () => {
-    const fromVal = (watchFrom ?? '').toString().trim();
-    const toVal = (watchTo ?? '').toString().trim();
-    const timeVal = (watchTime ?? '').toString().trim();
+  // Detect if user changed anything vs what's saved in context
+  const isDirty =
+    (watchFrom ?? '') !== (bookingData.from || '') ||
+    (watchTo ?? '') !== (bookingData.to || '') ||
+    dateStr !== (bookingData.date || '') ||
+    (watchTime ?? '') !== (bookingData.time || '') ||
+    Number(watchPassengers ?? 1) !== Number(bookingData.passengers ?? 1);
 
-    if (!fromVal) {
+  // Read fresh values directly from form store (avoids stale closures)
+  const readFormValues = () => {
+    const v = getValues();
+    return {
+      from: (v.from ?? '').toString().trim(),
+      to: (v.to ?? '').toString().trim(),
+      time: (v.time ?? '').toString().trim(),
+      passengers: Number(v.passengers ?? 1),
+    };
+  };
+
+  // Validate all fields; returns error message or null
+  const validateFields = (vals: ReturnType<typeof readFormValues>): string | null => {
+    if (!vals.from) {
       setError('from', { type: 'required', message: t.home.validation.requiredField });
-      return;
+      return 'from';
     }
-    if (!toVal) {
+    if (!vals.to) {
       setError('to', { type: 'required', message: t.home.validation.requiredField });
-      return;
+      return 'to';
     }
     if (!selectedDate) {
       toast.error(t.home.validation.invalidDate);
-      return;
+      return 'date';
     }
-    if (!timeVal) {
+    if (!vals.time) {
       toast.error('Please select a pickup time');
-      return;
+      return 'time';
     }
-
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (selectedDate < today) {
       toast.error(t.home.validation.pastDate);
-      return;
+      return 'date-past';
     }
+    return null;
+  };
+
+  // Save current form values to booking context
+  const saveToContext = (vals: ReturnType<typeof readFormValues>) => {
+    updateBookingData({
+      from: vals.from,
+      to: vals.to,
+      date: format(selectedDate!, 'yyyy-MM-dd'),
+      time: vals.time,
+      passengers: vals.passengers,
+    });
+  };
+
+  // "Update" — save changes to context without navigating
+  const handleUpdate = () => {
+    const vals = readFormValues();
+    const err = validateFields(vals);
+    if (err) return;
+    saveToContext(vals);
+    toast.success('Booking details updated');
+  };
+
+  // "Book" — save & navigate to summary
+  const handleBook = async () => {
+    const vals = readFormValues();
+    const err = validateFields(vals);
+    if (err) return;
 
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 300));
-
-    updateBookingData({
-      from: fromVal,
-      to: toVal,
-      date: format(selectedDate, 'yyyy-MM-dd'),
-      time: timeVal,
-      passengers: watchPassengers ?? 1,
-    });
-
+    saveToContext(vals);
     setIsLoading(false);
     navigate('/summary');
   };
@@ -289,7 +331,7 @@ export function HomePage() {
                 Addresses in Switzerland only. Select a suggestion for best results.
               </p>
 
-              <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-6">
+              <form onSubmit={(e) => { e.preventDefault(); handleBook(); }} className="space-y-6">
                 {/* From: controlled + Switzerland autocomplete */}
                 <div className="space-y-2">
                   <Label htmlFor="from" className="flex items-center gap-2 text-[#0a0a0a]">
@@ -422,14 +464,27 @@ export function HomePage() {
                   </Select>
                 </div>
 
-                {/* Book */}
-                <Button
-                  type="submit"
-                  className="w-full h-14 text-lg bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white shadow-lg transition-all duration-300 hover:shadow-xl"
-                  disabled={isLoading}
-                >
-                  {isLoading ? t.common.loading : 'Book'}
-                </Button>
+                {/* Update (when dirty) + Book */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {isDirty && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 h-14 text-base border-[#d4af37] text-[#b8941f] hover:bg-[#f4e4b7]/20"
+                      onClick={handleUpdate}
+                      disabled={isLoading}
+                    >
+                      Update
+                    </Button>
+                  )}
+                  <Button
+                    type="submit"
+                    className={`h-14 text-lg bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white shadow-lg transition-all duration-300 hover:shadow-xl ${isDirty ? 'flex-1' : 'w-full'}`}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? t.common.loading : 'Book'}
+                  </Button>
+                </div>
               </form>
             </div>
           </div>
