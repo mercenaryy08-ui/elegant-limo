@@ -339,13 +339,13 @@ export function CheckoutPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* First Name */}
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
+                      <Label htmlFor="firstName">First Name <span className="text-destructive">*</span></Label>
                       <Input
                         id="firstName"
                         placeholder="John"
                         autoComplete="given-name"
                         {...register('firstName', {
-                          required: 'First name is required',
+                          validate: (v) => (v != null && String(v).trim() !== '') || 'First name is required',
                         })}
                         className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
                         aria-invalid={errors.firstName ? 'true' : 'false'}
@@ -359,13 +359,13 @@ export function CheckoutPage() {
 
                     {/* Last Name */}
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
+                      <Label htmlFor="lastName">Last Name <span className="text-destructive">*</span></Label>
                       <Input
                         id="lastName"
                         placeholder="Doe"
                         autoComplete="family-name"
                         {...register('lastName', {
-                          required: 'Last name is required',
+                          validate: (v) => (v != null && String(v).trim() !== '') || 'Last name is required',
                         })}
                         className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
                         aria-invalid={errors.lastName ? 'true' : 'false'}
@@ -382,7 +382,7 @@ export function CheckoutPage() {
                   <div className="space-y-2">
                     <Label htmlFor="email" className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-[#d4af37]" />
-                      Email
+                      Email <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="email"
@@ -390,10 +390,11 @@ export function CheckoutPage() {
                       placeholder="john.doe@example.com"
                       autoComplete="email"
                       {...register('email', {
-                        required: 'Email is required',
-                        pattern: {
-                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: 'Invalid email address',
+                        validate: (v) => {
+                          const s = v != null ? String(v).trim() : '';
+                          if (s === '') return 'Email is required';
+                          if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(s)) return 'Invalid email address';
+                          return true;
                         },
                       })}
                       className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
@@ -410,7 +411,7 @@ export function CheckoutPage() {
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-[#d4af37]" />
-                      Phone Number
+                      Phone Number <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="phone"
@@ -418,7 +419,7 @@ export function CheckoutPage() {
                       placeholder="+41 79 123 4567"
                       autoComplete="tel"
                       {...register('phone', {
-                        required: 'Phone number is required',
+                        validate: (v) => (v != null && String(v).trim() !== '') || 'Phone number is required',
                       })}
                       className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
                       aria-invalid={errors.phone ? 'true' : 'false'}
