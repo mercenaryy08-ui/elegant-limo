@@ -81,43 +81,49 @@ export async function sendNewBookingAlertEmail(booking: BookingForNotification):
 export type BookingFormSubmitPayload = BookingForNotification & { customerName?: string; paymentMethod?: string };
 
 /**
- * Fallback: submit booking to FormSubmit.co so info@sdit-services.com receives an email (no backend needed).
+ * Fallback: submit booking to FormSubmit.co AJAX endpoint so info@sdit-services.com receives an email.
+ * Uses fetch (no page redirect, no new tab).
+ * NOTE: FormSubmit requires one-time email activation. The first submission triggers a confirmation
+ * email to the target address — click the link in that email to activate.
  */
-export function submitBookingToFormSubmit(booking: BookingFormSubmitPayload): void {
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = 'https://formsubmit.co/' + ADMIN_EMAIL;
-  form.target = '_blank';
-  form.style.display = 'none';
+export async function submitBookingToFormSubmit(booking: BookingFormSubmitPayload): Promise<void> {
+  const vehicle = getVehicleById(booking.vehicleId);
+  const vehicleName = vehicle ? `${vehicle.name} (${vehicle.className})` : booking.vehicleId;
 
-  const fields: Record<string, string> = {
+  const payload: Record<string, string> = {
     _subject: `[Elegant Limo] New booking ${booking.bookingReference}`,
     _template: 'box',
-    booking_reference: booking.bookingReference,
-    from: booking.from,
-    to: booking.to,
-    date: booking.date,
-    time: booking.time,
-    passengers: String(booking.passengers),
-    vehicle_id: booking.vehicleId,
-    total_price: String(booking.totalPrice),
-    customer_email: booking.customerEmail ?? '',
-    customer_phone: booking.customerPhone ?? '',
-    customer_name: booking.customerName ?? '',
-    payment_method: booking.paymentMethod ?? 'Card on vehicle',
+    _captcha: 'false',
+    'Booking Reference': booking.bookingReference,
+    'From': booking.from ?? '',
+    'To': booking.to ?? '',
+    'Date': booking.date ?? '',
+    'Time': booking.time ?? '',
+    'Passengers': String(booking.passengers ?? 1),
+    'Vehicle': vehicleName,
+    'Total Price': `CHF ${(booking.totalPrice ?? 0).toFixed(2)}`,
+    'Customer Name': booking.customerName ?? '',
+    'Customer Email': booking.customerEmail ?? '',
+    'Customer Phone': booking.customerPhone ?? '',
+    'Payment Method': booking.paymentMethod ?? 'Card on vehicle',
+    'Add-ons': booking.addOns?.length ? booking.addOns.join(', ') : 'None',
   };
 
-  Object.entries(fields).forEach(([key, value]) => {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = key;
-    input.value = value;
-    form.appendChild(input);
-  });
-
-  document.body.appendChild(form);
-  form.submit();
-  document.body.removeChild(form);
+  try {
+    const res = await fetch(`https://formsubmit.co/ajax/${ADMIN_EMAIL}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      console.warn('FormSubmit response not OK:', res.status);
+    }
+  } catch (err) {
+    console.warn('FormSubmit send failed:', err);
+  }
 }
 
 /**

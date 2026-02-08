@@ -71,36 +71,18 @@ export function CheckoutPage() {
     formState: { errors },
     watch,
     setValue,
-    reset,
   } = useForm<CheckoutFormData>({
     defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      specialRequests: '',
+      firstName: bookingData.customerDetails?.firstName ?? '',
+      lastName: bookingData.customerDetails?.lastName ?? '',
+      email: bookingData.customerDetails?.email ?? '',
+      phone: bookingData.customerDetails?.phone ?? '',
+      specialRequests: bookingData.customerDetails?.specialRequests ?? '',
       termsAccepted: false,
       cancellationAccepted: false,
     },
     mode: 'onSubmit',
   });
-
-  // Sync form from summary contact details (runs once on mount)
-  const cFirst = bookingData.customerDetails?.firstName ?? '';
-  const cLast = bookingData.customerDetails?.lastName ?? '';
-  const cEmail = bookingData.customerDetails?.email ?? '';
-  const cPhone = bookingData.customerDetails?.phone ?? '';
-  const cReqs = bookingData.customerDetails?.specialRequests ?? '';
-  useEffect(() => {
-    if (cFirst || cLast || cEmail || cPhone) {
-      setValue('firstName', cFirst);
-      setValue('lastName', cLast);
-      setValue('email', cEmail);
-      setValue('phone', cPhone);
-      setValue('specialRequests', cReqs);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cFirst, cLast, cEmail, cPhone]);
 
   const termsAccepted = watch('termsAccepted');
   const cancellationAccepted = watch('cancellationAccepted');
@@ -113,14 +95,8 @@ export function CheckoutPage() {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
     const reference = `EL${Date.now().toString().slice(-8)}`;
     const bookingId = `booking-${Date.now()}`;
-    setBookingReference(reference);
-    setIsSubmitting(false);
-    setShowSuccess(true);
 
     const customerEmail = data.email || bookingData.customerDetails?.email;
     const totalPrice =
@@ -143,15 +119,25 @@ export function CheckoutPage() {
       paymentMethod: bookingData.paymentMethod ?? 'Credit card in vehicle',
     };
 
+    // Send booking notification via FormSubmit (AJAX, no redirect)
+    try {
+      await submitBookingToFormSubmit(bookingPayload);
+    } catch (e) {
+      console.warn('FormSubmit notification failed:', e);
+    }
+
+    // Also try backend APIs (will silently fail if no backend is running)
     try {
       await sendBookingConfirmationEmail(bookingId, customerEmail ?? '');
       await sendNewBookingAlertEmail(bookingPayload);
       await sendWhatsAppBookingAlert(bookingPayload);
     } catch (e) {
-      console.warn('Notification send failed (backend may be unavailable):', e);
+      console.warn('Backend notification send failed (backend may be unavailable):', e);
     }
-    // Fallback: send to info@sdit-services.com via FormSubmit so they always get the booking
-    submitBookingToFormSubmit(bookingPayload);
+
+    setBookingReference(reference);
+    setIsSubmitting(false);
+    setShowSuccess(true);
   };
 
   const handleSuccessClose = () => {
