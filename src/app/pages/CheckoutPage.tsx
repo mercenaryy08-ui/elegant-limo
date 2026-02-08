@@ -42,10 +42,8 @@ const WHATSAPP_NUMBER = (import.meta as unknown as { env?: Record<string, string
 import { formatCHF, ADD_ONS } from '../lib/pricing';
 import { PAYMENT_POLICY, CANCELLATION_POLICY, generateInvoiceLineItems } from '../lib/policies';
 import {
-  sendBookingConfirmationEmail,
-  sendNewBookingAlertEmail,
-  sendWhatsAppBookingAlert,
-  submitBookingToFormSubmit,
+  sendAdminBookingAlert,
+  sendCustomerConfirmationEmail,
 } from '../lib/notifications';
 
 interface CheckoutFormData {
@@ -143,20 +141,16 @@ export function CheckoutPage() {
       updatedAt: new Date().toISOString(),
     });
 
-    // Send booking notification via FormSubmit (AJAX, no redirect)
+    // Send emails via FormSubmit AJAX (no redirect, no new tab)
+    // 1) Admin alert to info@sdit-services.com
+    // 2) Customer confirmation to their email
     try {
-      await submitBookingToFormSubmit(bookingPayload);
+      await Promise.all([
+        sendAdminBookingAlert(bookingPayload),
+        sendCustomerConfirmationEmail(bookingPayload),
+      ]);
     } catch (e) {
-      console.warn('FormSubmit notification failed:', e);
-    }
-
-    // Also try backend APIs (will silently fail if no backend is running)
-    try {
-      await sendBookingConfirmationEmail(bookingId, customerEmail ?? '');
-      await sendNewBookingAlertEmail(bookingPayload);
-      await sendWhatsAppBookingAlert(bookingPayload);
-    } catch (e) {
-      console.warn('Backend notification send failed (backend may be unavailable):', e);
+      console.warn('Email notification failed:', e);
     }
 
     setBookingReference(reference);

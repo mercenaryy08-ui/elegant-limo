@@ -4,7 +4,6 @@ import { MapPin, Clock, Users, Car, CreditCard, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { useBooking } from '../contexts/BookingContext';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { AddressAutocomplete } from '../components/AddressAutocomplete';
@@ -148,19 +147,9 @@ export function BookingSummaryPage() {
     }
   });
 
-  const contactValid =
-    (bookingData.customerDetails?.firstName ?? '').trim() !== '' &&
-    (bookingData.customerDetails?.lastName ?? '').trim() !== '' &&
-    (bookingData.customerDetails?.email ?? '').trim() !== '' &&
-    (bookingData.customerDetails?.phone ?? '').trim() !== '';
-
   const handleContinue = () => {
     if (!selectedVehicleId) {
       toast.error('Please choose a vehicle');
-      return;
-    }
-    if (!contactValid) {
-      toast.error('Please fill in all required contact fields: first name, last name, email, and phone');
       return;
     }
     const price = vehiclePrices[selectedVehicleId] ?? 0;
@@ -271,92 +260,6 @@ export function BookingSummaryPage() {
           </div>
         </section>
 
-        {/* Contact: name, surname, email, phone */}
-        <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-          <h2 className="text-xl font-serif font-bold mb-4 border-b pb-2">Contact details</h2>
-          <p className="text-sm text-gray-500 mb-4">All fields are required to continue.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-xs font-bold uppercase text-gray-500">First name <span className="text-red-500">*</span></Label>
-              <Input
-                className="mt-1 border-[#d4af37]/30"
-                placeholder="First name"
-                value={bookingData.customerDetails?.firstName ?? ''}
-                onChange={(e) =>
-                  updateBookingData({
-                    customerDetails: {
-                      ...(bookingData.customerDetails ?? {}),
-                      firstName: e.target.value,
-                      lastName: bookingData.customerDetails?.lastName ?? '',
-                      email: bookingData.customerDetails?.email ?? '',
-                      phone: bookingData.customerDetails?.phone ?? '',
-                    },
-                  })
-                }
-              />
-            </div>
-            <div>
-              <Label className="text-xs font-bold uppercase text-gray-500">Last name <span className="text-red-500">*</span></Label>
-              <Input
-                className="mt-1 border-[#d4af37]/30"
-                placeholder="Last name"
-                value={bookingData.customerDetails?.lastName ?? ''}
-                onChange={(e) =>
-                  updateBookingData({
-                    customerDetails: {
-                      ...(bookingData.customerDetails ?? {}),
-                      firstName: bookingData.customerDetails?.firstName ?? '',
-                      lastName: e.target.value,
-                      email: bookingData.customerDetails?.email ?? '',
-                      phone: bookingData.customerDetails?.phone ?? '',
-                    },
-                  })
-                }
-              />
-            </div>
-            <div>
-              <Label className="text-xs font-bold uppercase text-gray-500">Email <span className="text-red-500">*</span></Label>
-              <Input
-                type="email"
-                className="mt-1 border-[#d4af37]/30"
-                placeholder="Email"
-                value={bookingData.customerDetails?.email ?? ''}
-                onChange={(e) =>
-                  updateBookingData({
-                    customerDetails: {
-                      ...(bookingData.customerDetails ?? {}),
-                      firstName: bookingData.customerDetails?.firstName ?? '',
-                      lastName: bookingData.customerDetails?.lastName ?? '',
-                      email: e.target.value,
-                      phone: bookingData.customerDetails?.phone ?? '',
-                    },
-                  })
-                }
-              />
-            </div>
-            <div>
-              <Label className="text-xs font-bold uppercase text-gray-500">Phone <span className="text-red-500">*</span></Label>
-              <Input
-                type="tel"
-                className="mt-1 border-[#d4af37]/30"
-                placeholder="Phone"
-                value={bookingData.customerDetails?.phone ?? ''}
-                onChange={(e) =>
-                  updateBookingData({
-                    customerDetails: {
-                      ...(bookingData.customerDetails ?? {}),
-                      firstName: bookingData.customerDetails?.firstName ?? '',
-                      lastName: bookingData.customerDetails?.lastName ?? '',
-                      email: bookingData.customerDetails?.email ?? '',
-                      phone: e.target.value,
-                    },
-                  })
-                }
-              />
-            </div>
-          </div>
-        </section>
-
         {/* 2. Choose vehicle */}
         <section className="mb-8">
           <h2 className="text-xl font-serif font-bold mb-4">2. Choose your vehicle</h2>
@@ -437,11 +340,7 @@ export function BookingSummaryPage() {
                 onChange={(e) =>
                   updateBookingData({
                     customerDetails: {
-                      ...(bookingData.customerDetails ?? {}),
-                      firstName: bookingData.customerDetails?.firstName ?? '',
-                      lastName: bookingData.customerDetails?.lastName ?? '',
-                      email: bookingData.customerDetails?.email ?? '',
-                      phone: bookingData.customerDetails?.phone ?? '',
+                      ...(bookingData.customerDetails ?? { firstName: '', lastName: '', email: '', phone: '' }),
                       specialRequests: e.target.value,
                     },
                   })
@@ -457,7 +356,7 @@ export function BookingSummaryPage() {
           </Button>
           <Button
             onClick={handleContinue}
-            disabled={!selectedVehicleId || !contactValid}
+            disabled={!selectedVehicleId}
             className="bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white px-8 disabled:opacity-50"
           >
             Continue to checkout
