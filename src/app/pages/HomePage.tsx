@@ -102,20 +102,11 @@ export function HomePage() {
   const watchTime = watch('time');
   const watchPassengers = watch('passengers');
 
-  // Sync form from bookingData (so from/to/date/time are editable and show current values)
+  // Pre-fill from Hostinger hero (URL params: from, to, date, fromLat, fromLon, toLat, toLon) — runs once on mount
+  const prefillRan = useRef(false);
   useEffect(() => {
-    if (bookingData.from) setValue('from', bookingData.from);
-    if (bookingData.to) setValue('to', bookingData.to);
-    if (bookingData.time) setValue('time', bookingData.time);
-    if (bookingData.passengers) setValue('passengers', bookingData.passengers);
-    if (bookingData.date) {
-      const d = new Date(bookingData.date);
-      if (!isNaN(d.getTime())) setSelectedDate(d);
-    }
-  }, [bookingData.from, bookingData.to, bookingData.date, bookingData.time, bookingData.passengers, setValue]);
-
-  // Pre-fill from Hostinger hero (URL params: from, to, date, fromLat, fromLon, toLat, toLon)
-  useEffect(() => {
+    if (prefillRan.current) return;
+    prefillRan.current = true;
     const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
     const from = params.get('from')?.trim();
     const to = params.get('to')?.trim();
@@ -152,7 +143,8 @@ export function HomePage() {
       if (!isNaN(lat) && !isNaN(lng)) updates.toLatLon = { lat, lng };
     }
     if (Object.keys(updates).length) updateBookingData(updates);
-  }, [setValue, updateBookingData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Geocode from/to when we have address text but no coords (e.g. after URL prefill or typing)
   useEffect(() => {
