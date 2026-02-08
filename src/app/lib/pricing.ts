@@ -69,8 +69,8 @@ export interface AddOn {
 export const ADD_ONS: AddOn[] = [
   {
     id: 'vip-meet-inside',
-    name: 'VIP Meet Inside Airport',
-    description: 'Personal meet and greet service inside the airport terminal',
+    name: 'VIP Service',
+    description: 'Airport meet-and-greet inside the terminal (chauffeur enters the terminal to pick you up)',
     price: 100,
     icon: '✈️',
   },

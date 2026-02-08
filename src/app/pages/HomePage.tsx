@@ -24,6 +24,7 @@ import {
 import { setOpsAuthenticated } from '../lib/ops-auth';
 import { toast } from 'sonner';
 import { fetchOsrmRoute } from '../lib/route-utils';
+import { geocodeAddress } from '../lib/nominatim';
 
 const OPS_PIN = '21220';
 const RAPID_CLICK_WINDOW_MS = 2000;
@@ -151,6 +152,30 @@ export function HomePage() {
     }
     if (Object.keys(updates).length) updateBookingData(updates);
   }, [setValue, updateBookingData]);
+
+  // Geocode from/to when we have address text but no coords (e.g. after URL prefill or typing)
+  useEffect(() => {
+    const fromText = (bookingData.from || '').trim();
+    const toText = (bookingData.to || '').trim();
+    if (fromText.length < 3 || toText.length < 3) return;
+    if (bookingData.fromLatLon && bookingData.toLatLon) return;
+
+    let cancelled = false;
+    const run = async () => {
+      const updates: Partial<BookingData> = {};
+      if (!bookingData.fromLatLon) {
+        const coords = await geocodeAddress(fromText);
+        if (coords && !cancelled) updates.fromLatLon = coords;
+      }
+      if (!bookingData.toLatLon) {
+        const coords = await geocodeAddress(toText);
+        if (coords && !cancelled) updates.toLatLon = coords;
+      }
+      if (Object.keys(updates).length) updateBookingData(updates);
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [bookingData.from, bookingData.to, bookingData.fromLatLon, bookingData.toLatLon, updateBookingData]);
 
   // Fetch road route for background map when we have both coords
   useEffect(() => {

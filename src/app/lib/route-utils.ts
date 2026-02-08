@@ -25,13 +25,14 @@ const OSRM_BASE = 'https://router.project-osrm.org/route/v1/driving';
 
 /**
  * Fetch road route geometry and distance/duration from OSRM (free, no API key).
+ * Coordinates: lon,lat;lon,lat (OSRM order, no encoding of the path).
  */
 export function fetchOsrmRoute(
   from: { lat: number; lng: number },
   to: { lat: number; lng: number }
 ): Promise<RouteInfo> {
-  const coords = `${from.lng},${from.lat};${to.lng},${to.lat}`;
-  const url = `${OSRM_BASE}/${encodeURIComponent(coords)}?overview=full&geometries=geojson`;
+  const path = `${from.lng},${from.lat};${to.lng},${to.lat}`;
+  const url = `${OSRM_BASE}/${path}?overview=full&geometries=geojson`;
 
   return fetch(url)
     .then((res) => res.json())

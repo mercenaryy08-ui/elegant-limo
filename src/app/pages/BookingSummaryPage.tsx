@@ -12,6 +12,7 @@ import { BookingMap } from '../components/BookingMap';
 import { getAvailableVehicles, getVehicleById } from '../lib/fleet';
 import { calculatePrice, formatCHF } from '../lib/pricing';
 import { fetchOsrmRoute } from '../lib/route-utils';
+import { geocodeAddress } from '../lib/nominatim';
 import { toast } from 'sonner';
 
 const VEHICLE_CARDS = [
@@ -65,6 +66,27 @@ export function BookingSummaryPage() {
   const toLatLon = bookingData.toLatLon;
   const distance = bookingData.distance ?? 0;
   const duration = bookingData.estimatedDuration ?? 0;
+
+  // Geocode when we have from/to text but no coords
+  useEffect(() => {
+    const fromText = (bookingData.from || '').trim();
+    const toText = (bookingData.to || '').trim();
+    if (fromText.length < 3 || toText.length < 3) return;
+    if (bookingData.fromLatLon && bookingData.toLatLon) return;
+    let cancelled = false;
+    const run = async () => {
+      if (!bookingData.fromLatLon) {
+        const coords = await geocodeAddress(fromText);
+        if (coords && !cancelled) updateBookingData({ fromLatLon: coords });
+      }
+      if (!bookingData.toLatLon) {
+        const coords = await geocodeAddress(toText);
+        if (coords && !cancelled) updateBookingData({ toLatLon: coords });
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [bookingData.from, bookingData.to, bookingData.fromLatLon, bookingData.toLatLon, updateBookingData]);
 
   useEffect(() => {
     if (!fromLatLon || !toLatLon) return;
@@ -123,9 +145,19 @@ export function BookingSummaryPage() {
     }
   });
 
+  const contactValid =
+    (bookingData.customerDetails?.firstName ?? '').trim() !== '' &&
+    (bookingData.customerDetails?.lastName ?? '').trim() !== '' &&
+    (bookingData.customerDetails?.email ?? '').trim() !== '' &&
+    (bookingData.customerDetails?.phone ?? '').trim() !== '';
+
   const handleContinue = () => {
     if (!selectedVehicleId) {
       toast.error('Please choose a vehicle');
+      return;
+    }
+    if (!contactValid) {
+      toast.error('Please fill in all required contact fields: first name, last name, email, and phone');
       return;
     }
     const price = vehiclePrices[selectedVehicleId] ?? 0;
@@ -238,9 +270,10 @@ export function BookingSummaryPage() {
         {/* Contact: name, surname, email, phone */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
           <h2 className="text-xl font-serif font-bold mb-4 border-b pb-2">Contact details</h2>
+          <p className="text-sm text-gray-500 mb-4">All fields are required to continue.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label className="text-xs font-bold uppercase text-gray-500">First name</Label>
+              <Label className="text-xs font-bold uppercase text-gray-500">First name <span className="text-red-500">*</span></Label>
               <Input
                 className="mt-1 border-[#d4af37]/30"
                 placeholder="First name"
@@ -259,7 +292,7 @@ export function BookingSummaryPage() {
               />
             </div>
             <div>
-              <Label className="text-xs font-bold uppercase text-gray-500">Last name</Label>
+              <Label className="text-xs font-bold uppercase text-gray-500">Last name <span className="text-red-500">*</span></Label>
               <Input
                 className="mt-1 border-[#d4af37]/30"
                 placeholder="Last name"
@@ -278,7 +311,7 @@ export function BookingSummaryPage() {
               />
             </div>
             <div>
-              <Label className="text-xs font-bold uppercase text-gray-500">Email</Label>
+              <Label className="text-xs font-bold uppercase text-gray-500">Email <span className="text-red-500">*</span></Label>
               <Input
                 type="email"
                 className="mt-1 border-[#d4af37]/30"
@@ -298,7 +331,7 @@ export function BookingSummaryPage() {
               />
             </div>
             <div>
-              <Label className="text-xs font-bold uppercase text-gray-500">Phone</Label>
+              <Label className="text-xs font-bold uppercase text-gray-500">Phone <span className="text-red-500">*</span></Label>
               <Input
                 type="tel"
                 className="mt-1 border-[#d4af37]/30"
@@ -420,8 +453,8 @@ export function BookingSummaryPage() {
           </Button>
           <Button
             onClick={handleContinue}
-            disabled={!selectedVehicleId}
-            className="bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white px-8"
+            disabled={!selectedVehicleId || !contactValid}
+            className="bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white px-8 disabled:opacity-50"
           >
             Continue to checkout
           </Button>

@@ -38,7 +38,7 @@ import { toast } from 'sonner';
 import { getVehicleById } from '../lib/fleet';
 
 const WHATSAPP_NUMBER = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_WHATSAPP_NUMBER || '38348263151';
-import { formatCHF } from '../lib/pricing';
+import { formatCHF, ADD_ONS } from '../lib/pricing';
 import { PAYMENT_POLICY, CANCELLATION_POLICY, generateInvoiceLineItems } from '../lib/policies';
 import {
   sendBookingConfirmationEmail,
@@ -59,7 +59,7 @@ interface CheckoutFormData {
 
 export function CheckoutPage() {
   const navigate = useNavigate();
-  const { bookingData, resetBooking } = useBooking();
+  const { bookingData, updateBookingData, resetBooking } = useBooking();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [bookingReference, setBookingReference] = useState('');
@@ -71,17 +71,38 @@ export function CheckoutPage() {
     formState: { errors },
     watch,
     setValue,
+    reset,
   } = useForm<CheckoutFormData>({
     defaultValues: {
-      firstName: bookingData.customerDetails?.firstName ?? '',
-      lastName: bookingData.customerDetails?.lastName ?? '',
-      email: bookingData.customerDetails?.email ?? '',
-      phone: bookingData.customerDetails?.phone ?? '',
-      specialRequests: bookingData.customerDetails?.specialRequests ?? '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      specialRequests: '',
       termsAccepted: false,
       cancellationAccepted: false,
     },
+    mode: 'onSubmit',
   });
+
+  // Sync form from summary: when customer details exist in booking, populate form so validation sees them
+  useEffect(() => {
+    const c = bookingData.customerDetails;
+    if (c?.firstName || c?.lastName || c?.email || c?.phone) {
+      reset(
+        {
+          firstName: c.firstName ?? '',
+          lastName: c.lastName ?? '',
+          email: c.email ?? '',
+          phone: c.phone ?? '',
+          specialRequests: c.specialRequests ?? '',
+          termsAccepted: false,
+          cancellationAccepted: false,
+        },
+        { keepDefaultValues: false }
+      );
+    }
+  }, [bookingData.customerDetails?.firstName, bookingData.customerDetails?.lastName, bookingData.customerDetails?.email, bookingData.customerDetails?.phone, reset]);
 
   const termsAccepted = watch('termsAccepted');
   const cancellationAccepted = watch('cancellationAccepted');
@@ -104,7 +125,9 @@ export function CheckoutPage() {
     setShowSuccess(true);
 
     const customerEmail = data.email || bookingData.customerDetails?.email;
-    const totalPrice = bookingData.totalPrice ?? bookingData.priceCalculation?.subtotal ?? 0;
+    const totalPrice =
+      (bookingData.totalPrice ?? 0) +
+      ADD_ONS.filter((a) => (bookingData.selectedAddOns ?? []).includes(a.id)).reduce((s, a) => s + a.price, 0);
     const bookingPayload = {
       id: bookingId,
       bookingReference: reference,
@@ -151,7 +174,12 @@ export function CheckoutPage() {
     return null;
   }
 
-  // Generate invoice line items (or single total from summary)
+  const baseTotal = bookingData.totalPrice ?? 0;
+  const selectedAddOns = bookingData.selectedAddOns ?? [];
+  const addOnsTotal = ADD_ONS.filter((a) => selectedAddOns.includes(a.id)).reduce((s, a) => s + a.price, 0);
+  const displayTotal = baseTotal + addOnsTotal;
+
+  // Generate invoice line items (or build from summary total + add-ons)
   const invoiceItems = bookingData.priceCalculation
     ? generateInvoiceLineItems({
         basePrice: bookingData.priceCalculation.basePrice,
@@ -159,14 +187,15 @@ export function CheckoutPage() {
           bookingData.priceCalculation.pricingMethod === 'fixed-route'
             ? bookingData.priceCalculation.fixedRoute!.description
             : `${bookingData.distance?.toFixed(1)} km × ${formatCHF(bookingData.priceCalculation.perKmRate!)}`,
-        addOns: bookingData.priceCalculation.addOns,
+        addOns: [
+          ...(bookingData.priceCalculation.addOns ?? []),
+          ...ADD_ONS.filter((a) => selectedAddOns.includes(a.id)).map((a) => ({ name: a.name, price: a.price })),
+        ],
       })
     : [
-        {
-          type: 'total' as const,
-          description: 'Total',
-          amount: bookingData.totalPrice ?? 0,
-        },
+        { description: 'Transfer', amount: baseTotal, type: 'base' as const },
+        ...ADD_ONS.filter((a) => selectedAddOns.includes(a.id)).map((a) => ({ description: a.name, amount: a.price, type: 'addon' as const })),
+        { description: 'Total', amount: displayTotal, type: 'total' as const },
       ];
 
   const BookingSummaryCard = () => (
@@ -398,6 +427,36 @@ export function CheckoutPage() {
                       rows={3}
                     />
                   </div>
+                </div>
+              </Card>
+
+              {/* Add-ons (e.g. VIP) */}
+              <Card className="border-[#d4af37]/30">
+                <div className="p-6 space-y-4">
+                  <h3 className="text-xl font-semibold text-[#0a0a0a]">Add-ons</h3>
+                  {ADD_ONS.map((addon) => {
+                    const checked = selectedAddOns.includes(addon.id);
+                    return (
+                      <label
+                        key={addon.id}
+                        className="flex items-start gap-3 cursor-pointer rounded-lg border border-[#d4af37]/30 p-4 hover:bg-[#f4e4b7]/10"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(c) => {
+                            const next = c ? [...selectedAddOns, addon.id] : selectedAddOns.filter((id) => id !== addon.id);
+                            updateBookingData({ selectedAddOns: next });
+                          }}
+                          className="border-[#d4af37] data-[state=checked]:bg-[#d4af37] mt-0.5"
+                        />
+                        <div>
+                          <span className="font-medium text-[#0a0a0a]">{addon.name}</span>
+                          <span className="ml-2 text-[#d4af37] font-semibold">{formatCHF(addon.price)}</span>
+                          <p className="text-sm text-muted-foreground mt-1">{addon.description}</p>
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
               </Card>
 
