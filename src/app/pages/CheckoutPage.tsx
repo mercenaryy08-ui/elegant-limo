@@ -86,6 +86,15 @@ export function CheckoutPage() {
   const termsAccepted = watch('termsAccepted');
   const cancellationAccepted = watch('cancellationAccepted');
 
+  const onInvalid = (errors: Record<string, unknown>) => {
+    const first = Object.keys(errors)[0];
+    if (first) {
+      const el = document.getElementById(first);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    toast.error('Please fill in all required fields (name, email, phone) and fix any errors below.');
+  };
+
   const onSubmit = async (data: CheckoutFormData) => {
     if (!data.termsAccepted || !data.cancellationAccepted) {
       toast.error('Please accept the terms and cancellation policy');
@@ -93,69 +102,72 @@ export function CheckoutPage() {
     }
 
     setIsSubmitting(true);
-
-    const reference = `EL${Date.now().toString().slice(-8)}`;
-    const bookingId = `booking-${Date.now()}`;
-
-    const customerEmail = data.email || bookingData.customerDetails?.email;
-    const totalPrice =
-      (bookingData.totalPrice ?? 0) +
-      ADD_ONS.filter((a) => (bookingData.selectedAddOns ?? []).includes(a.id)).reduce((s, a) => s + a.price, 0);
-    const bookingPayload = {
-      id: bookingId,
-      bookingReference: reference,
-      from: bookingData.from,
-      to: bookingData.to,
-      date: bookingData.date,
-      time: bookingData.time,
-      passengers: bookingData.passengers,
-      vehicleId: bookingData.vehicleId!,
-      addOns: bookingData.selectedAddOns ?? [],
-      totalPrice,
-      customerEmail,
-      customerPhone: data.phone || bookingData.customerDetails?.phone,
-      customerName: [data.firstName, data.lastName].filter(Boolean).join(' ') || [bookingData.customerDetails?.firstName, bookingData.customerDetails?.lastName].filter(Boolean).join(' '),
-      paymentMethod: bookingData.paymentMethod ?? 'Credit card in vehicle',
-    };
-
-    // Persist booking to localStorage so ops dashboard/calendar can see it
-    addBooking({
-      id: bookingId,
-      bookingReference: reference,
-      status: 'confirmed',
-      from: bookingData.from,
-      to: bookingData.to,
-      date: bookingData.date,
-      time: bookingData.time,
-      passengers: bookingData.passengers,
-      vehicleId: bookingData.vehicleId!,
-      totalPrice,
-      customerDetails: {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        specialRequests: data.specialRequests,
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-
-    // Send emails via FormSubmit AJAX (no redirect, no new tab)
-    // 1) Admin alert to info@sdit-services.com
-    // 2) Customer confirmation to their email
     try {
-      await Promise.all([
-        sendAdminBookingAlert(bookingPayload),
-        sendCustomerConfirmationEmail(bookingPayload),
-      ]);
-    } catch (e) {
-      console.warn('Email notification failed:', e);
-    }
+      const reference = `EL${Date.now().toString().slice(-8)}`;
+      const bookingId = `booking-${Date.now()}`;
 
-    setBookingReference(reference);
-    setIsSubmitting(false);
-    setShowSuccess(true);
+      const customerEmail = data.email || bookingData.customerDetails?.email;
+      const totalPrice =
+        (bookingData.totalPrice ?? 0) +
+        ADD_ONS.filter((a) => (bookingData.selectedAddOns ?? []).includes(a.id)).reduce((s, a) => s + a.price, 0);
+      const bookingPayload = {
+        id: bookingId,
+        bookingReference: reference,
+        from: bookingData.from,
+        to: bookingData.to,
+        date: bookingData.date,
+        time: bookingData.time,
+        passengers: bookingData.passengers,
+        vehicleId: bookingData.vehicleId!,
+        addOns: bookingData.selectedAddOns ?? [],
+        totalPrice,
+        customerEmail,
+        customerPhone: data.phone || bookingData.customerDetails?.phone,
+        customerName: [data.firstName, data.lastName].filter(Boolean).join(' ') || [bookingData.customerDetails?.firstName, bookingData.customerDetails?.lastName].filter(Boolean).join(' '),
+        paymentMethod: bookingData.paymentMethod ?? 'Credit card in vehicle',
+      };
+
+      // Persist booking to localStorage so ops dashboard/calendar can see it
+      addBooking({
+        id: bookingId,
+        bookingReference: reference,
+        status: 'confirmed',
+        from: bookingData.from,
+        to: bookingData.to,
+        date: bookingData.date,
+        time: bookingData.time,
+        passengers: bookingData.passengers,
+        vehicleId: bookingData.vehicleId!,
+        totalPrice,
+        customerDetails: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          specialRequests: data.specialRequests,
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      // Send emails via FormSubmit AJAX (no redirect, no new tab)
+      try {
+        await Promise.all([
+          sendAdminBookingAlert(bookingPayload),
+          sendCustomerConfirmationEmail(bookingPayload),
+        ]);
+      } catch (e) {
+        console.warn('Email notification failed:', e);
+      }
+
+      setBookingReference(reference);
+      setShowSuccess(true);
+    } catch (err) {
+      console.error('Checkout error:', err);
+      toast.error('Something went wrong. Please try again or contact us.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSuccessClose = () => {
@@ -315,7 +327,7 @@ export function CheckoutPage() {
               <p className="text-muted-foreground">Just a few more details to confirm your booking</p>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-8">
               {/* Customer Details */}
               <Card className="border-[#d4af37]/30">
                 <div className="p-6 space-y-6">
@@ -548,7 +560,7 @@ export function CheckoutPage() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={isSubmitting || !termsAccepted || !cancellationAccepted}
+                disabled={isSubmitting}
                 className="w-full h-14 text-lg bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white shadow-lg transition-all duration-300 disabled:opacity-50"
               >
                 {isSubmitting ? (
