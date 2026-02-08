@@ -33,14 +33,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
+import { CalendarPlus, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { getVehicleById } from '../lib/fleet';
+
+const WHATSAPP_NUMBER = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_WHATSAPP_NUMBER || '38348263151';
 import { formatCHF } from '../lib/pricing';
 import { PAYMENT_POLICY, CANCELLATION_POLICY, generateInvoiceLineItems } from '../lib/policies';
 import {
   sendBookingConfirmationEmail,
   sendNewBookingAlertEmail,
   sendWhatsAppBookingAlert,
+  submitBookingToFormSubmit,
 } from '../lib/notifications';
 
 interface CheckoutFormData {
@@ -69,6 +73,11 @@ export function CheckoutPage() {
     setValue,
   } = useForm<CheckoutFormData>({
     defaultValues: {
+      firstName: bookingData.customerDetails?.firstName ?? '',
+      lastName: bookingData.customerDetails?.lastName ?? '',
+      email: bookingData.customerDetails?.email ?? '',
+      phone: bookingData.customerDetails?.phone ?? '',
+      specialRequests: bookingData.customerDetails?.specialRequests ?? '',
       termsAccepted: false,
       cancellationAccepted: false,
     },
@@ -94,6 +103,8 @@ export function CheckoutPage() {
     setIsSubmitting(false);
     setShowSuccess(true);
 
+    const customerEmail = data.email || bookingData.customerDetails?.email;
+    const totalPrice = bookingData.totalPrice ?? bookingData.priceCalculation?.subtotal ?? 0;
     const bookingPayload = {
       id: bookingId,
       bookingReference: reference,
@@ -104,18 +115,22 @@ export function CheckoutPage() {
       passengers: bookingData.passengers,
       vehicleId: bookingData.vehicleId!,
       addOns: bookingData.selectedAddOns ?? [],
-      totalPrice: bookingData.totalPrice ?? bookingData.priceCalculation?.subtotal ?? 0,
-      customerEmail: data.email,
-      customerPhone: data.phone,
+      totalPrice,
+      customerEmail,
+      customerPhone: data.phone || bookingData.customerDetails?.phone,
+      customerName: [data.firstName, data.lastName].filter(Boolean).join(' ') || [bookingData.customerDetails?.firstName, bookingData.customerDetails?.lastName].filter(Boolean).join(' '),
+      paymentMethod: bookingData.paymentMethod ?? 'Credit card in vehicle',
     };
 
     try {
-      await sendBookingConfirmationEmail(bookingId, data.email);
+      await sendBookingConfirmationEmail(bookingId, customerEmail ?? '');
       await sendNewBookingAlertEmail(bookingPayload);
       await sendWhatsAppBookingAlert(bookingPayload);
     } catch (e) {
       console.warn('Notification send failed (backend may be unavailable):', e);
     }
+    // Fallback: send to info@sdit-services.com via FormSubmit so they always get the booking
+    submitBookingToFormSubmit(bookingPayload);
   };
 
   const handleSuccessClose = () => {
@@ -125,7 +140,7 @@ export function CheckoutPage() {
   };
 
   // Redirect if no booking data
-  if (!bookingData.from || !bookingData.priceCalculation || !bookingData.vehicleId) {
+  if (!bookingData.from || !bookingData.to || !bookingData.vehicleId) {
     navigate('/');
     return null;
   }
@@ -136,7 +151,7 @@ export function CheckoutPage() {
     return null;
   }
 
-  // Generate invoice line items
+  // Generate invoice line items (or single total from summary)
   const invoiceItems = bookingData.priceCalculation
     ? generateInvoiceLineItems({
         basePrice: bookingData.priceCalculation.basePrice,
@@ -146,7 +161,13 @@ export function CheckoutPage() {
             : `${bookingData.distance?.toFixed(1)} km × ${formatCHF(bookingData.priceCalculation.perKmRate!)}`,
         addOns: bookingData.priceCalculation.addOns,
       })
-    : [];
+    : [
+        {
+          type: 'total' as const,
+          description: 'Total',
+          amount: bookingData.totalPrice ?? 0,
+        },
+      ];
 
   const BookingSummaryCard = () => (
     <Card className="border-[#d4af37]/30 bg-gradient-to-br from-white to-[#fafafa] shadow-lg sticky top-24">
@@ -507,18 +528,53 @@ export function CheckoutPage() {
               <CheckCircle2 className="w-8 h-8 text-white" />
             </div>
             <DialogTitle className="text-2xl text-center text-[#0a0a0a]">
-              Booking Confirmed!
+              Booking confirmed
             </DialogTitle>
             <DialogDescription className="text-center space-y-4 pt-4">
               <p className="text-muted-foreground">
-                We've sent a confirmation email to your inbox.
+                A confirmation email has been sent to your inbox with your booking ID.
               </p>
+              {bookingData.date && (
+                <p className="text-sm font-medium text-[#0a0a0a]">
+                  Pickup: {format(new Date(bookingData.date), 'PPP')} at {bookingData.time}
+                </p>
+              )}
               <div className="bg-[#fafafa] p-4 rounded-lg border border-[#d4af37]/20">
-                <p className="text-xs text-muted-foreground mb-1">Booking Reference</p>
+                <p className="text-xs text-muted-foreground mb-1">Booking ID</p>
                 <p className="text-xl font-bold text-[#d4af37] tracking-wider">{bookingReference}</p>
               </div>
+              <div className="flex flex-col gap-2">
+                <a
+                  href={(() => {
+                    const d = bookingData.date;
+                    const t = bookingData.time || '09:00';
+                    const [h, m] = t.split(':').map((x) => parseInt(x, 10) || 0);
+                    const start = new Date(d + 'T' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':00');
+                    const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+                    const fmt = (x: Date) => x.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+                    const text = encodeURIComponent(`Elegant Limo: ${bookingData.from} → ${bookingData.to}`);
+                    const details = encodeURIComponent(`Booking ${bookingReference}. ${bookingData.passengers} passenger(s).`);
+                    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${fmt(start)}/${fmt(end)}&details=${details}`;
+                  })()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 h-11 rounded-lg border border-[#d4af37]/50 bg-[#f4e4b7]/20 text-[#0a0a0a] font-medium hover:bg-[#f4e4b7]/40 transition"
+                >
+                  <CalendarPlus className="w-4 h-4" />
+                  Add to Google Calendar
+                </a>
+                <a
+                  href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hi, I have a booking with Elegant Limo. My booking ID: ${bookingReference}.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 h-11 rounded-lg border border-[#25D366] bg-[#25D366]/10 text-[#0a0a0a] font-medium hover:bg-[#25D366]/20 transition"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Contact us on WhatsApp (with booking ID)
+                </a>
+              </div>
               <div className="bg-[#f4e4b7]/20 border border-[#d4af37]/30 rounded-lg p-4">
-                <p className="text-sm text-[#0a0a0a] font-medium mb-2">Payment Information</p>
+                <p className="text-sm text-[#0a0a0a] font-medium mb-2">Payment</p>
                 <p className="text-xs text-muted-foreground">
                   Payment will be collected by card on the vehicle at the end of your trip.
                 </p>
