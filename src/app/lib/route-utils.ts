@@ -6,6 +6,7 @@ export interface RouteInfo {
   distanceKm: number;
   durationMinutes: number;
   routePoints?: { lat: number; lng: number }[];
+  geoJson?: unknown; // raw GeoJSON geometry from OSRM for L.geoJSON()
 }
 
 const FALLBACK_KM_PER_DEGREE = 111; // rough
@@ -49,7 +50,7 @@ export function fetchOsrmRoute(
           from,
           to,
         ];
-      return { distanceKm, durationMinutes, routePoints };
+      return { distanceKm, durationMinutes, routePoints, geoJson: route.geometry };
     })
     .catch(() => {
       const fallback = estimateRouteFromLatLon(from, to);

@@ -46,6 +46,7 @@ export function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [routePoints, setRoutePoints] = useState<{ lat: number; lng: number }[]>([]);
+  const [routeGeoJson, setRouteGeoJson] = useState<unknown>(null);
   const [opsPinOpen, setOpsPinOpen] = useState(false);
   const [opsPinValue, setOpsPinValue] = useState('');
   const [opsPinError, setOpsPinError] = useState('');
@@ -187,7 +188,9 @@ export function HomePage() {
     }
     let cancelled = false;
     fetchOsrmRoute(from, to).then((info) => {
-      if (!cancelled && info.routePoints?.length) setRoutePoints(info.routePoints);
+      if (cancelled) return;
+      if (info.routePoints?.length) setRoutePoints(info.routePoints);
+      if (info.geoJson) setRouteGeoJson(info.geoJson);
     });
     return () => {
       cancelled = true;
@@ -213,6 +216,10 @@ export function HomePage() {
       toast.error(t.home.validation.invalidDate);
       return;
     }
+    if (!watchTime) {
+      toast.error('Please select a pickup time');
+      return;
+    }
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (selectedDate < today) {
@@ -223,7 +230,7 @@ export function HomePage() {
       from: fromVal,
       to: toVal,
       date: dateStr,
-      time: watchTime || '09:00',
+      time: watchTime,
       passengers: watchPassengers ?? 1,
     });
     toast.success('Booking details updated');
@@ -242,6 +249,10 @@ export function HomePage() {
     }
     if (!selectedDate) {
       toast.error(t.home.validation.invalidDate);
+      return;
+    }
+    if (!data.time) {
+      toast.error('Please select a pickup time');
       return;
     }
 
@@ -292,6 +303,7 @@ export function HomePage() {
             from={bookingData.fromLatLon ?? undefined}
             to={bookingData.toLatLon ?? undefined}
             routePoints={routePoints.length >= 2 ? routePoints : undefined}
+            geoJson={routeGeoJson ?? undefined}
             className="w-full h-full min-h-[280px]"
           />
         </div>

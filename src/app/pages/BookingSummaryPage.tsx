@@ -20,7 +20,7 @@ const VEHICLE_CARDS = [
     id: 'vehicle-standard-eclass',
     badge: 'Max 3 Pax',
     popular: false,
-    imageUrl: 'https://assets.zyrosite.com/0B1b2Hs9k1Tamhoi/4-jnTJVTKo6gT3jOnt.jpg',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Mercedes-Benz_W214_IMG_6325.jpg/1280px-Mercedes-Benz_W214_IMG_6325.jpg',
     title: 'Mercedes E-Class',
     subtitle: 'Business Class',
     features: ['Leather interior', 'Free Wi-Fi & water', '2 suitcases'],
@@ -29,7 +29,7 @@ const VEHICLE_CARDS = [
     id: 'vehicle-premium-sclass',
     badge: null,
     popular: true,
-    imageUrl: 'https://assets.zyrosite.com/0B1b2Hs9k1Tamhoi/8-F4xzG4Z3SmAudVea.jpg',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/2022_Mercedes-Benz_S_500_4MATIC_%28V223%29%2C_front_12.30.22.jpg/1280px-2022_Mercedes-Benz_S_500_4MATIC_%28V223%29%2C_front_12.30.22.jpg',
     title: 'Mercedes S-Class',
     subtitle: 'First Class',
     features: ['Executive comfort', 'Extra legroom', '3 suitcases'],
@@ -38,7 +38,7 @@ const VEHICLE_CARDS = [
     id: 'vehicle-van-vclass',
     badge: 'Max 7 Pax',
     popular: false,
-    imageUrl: 'https://assets.zyrosite.com/0B1b2Hs9k1Tamhoi/7-2rOvtUBp1KVR8X7H.jpg',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Mercedes-Benz_V_220d_Avantgarde_extralang_%28W_447%2C_Facelift%29_%E2%80%93_f_30082019.jpg/1280px-Mercedes-Benz_V_220d_Avantgarde_extralang_%28W_447%2C_Facelift%29_%E2%80%93_f_30082019.jpg',
     title: 'Mercedes V-Class',
     subtitle: 'Business Van',
     features: ['Ideal for families & groups', 'Conference seating', '7 suitcases'],
@@ -49,6 +49,7 @@ export function BookingSummaryPage() {
   const navigate = useNavigate();
   const { bookingData, updateBookingData } = useBooking();
   const [routePoints, setRoutePoints] = useState<{ lat: number; lng: number }[]>([]);
+  const [routeGeoJson, setRouteGeoJson] = useState<unknown>(null);
   const [recalculating, setRecalculating] = useState(false);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | undefined>(bookingData.vehicleId);
 
@@ -94,6 +95,7 @@ export function BookingSummaryPage() {
     fetchOsrmRoute(fromLatLon, toLatLon).then((info) => {
       if (cancelled) return;
       if (info.routePoints?.length) setRoutePoints(info.routePoints);
+      if (info.geoJson) setRouteGeoJson(info.geoJson);
       if (!bookingData.distance && info.distanceKm) {
         updateBookingData({
           distance: info.distanceKm,
@@ -117,6 +119,7 @@ export function BookingSummaryPage() {
     try {
       const info = await fetchOsrmRoute(bookingData.fromLatLon, bookingData.toLatLon);
       setRoutePoints(info.routePoints ?? []);
+      setRouteGeoJson(info.geoJson ?? null);
       updateBookingData({
         distance: info.distanceKm,
         estimatedDuration: info.durationMinutes,
@@ -239,6 +242,7 @@ export function BookingSummaryPage() {
               from={bookingData.fromLatLon ?? undefined}
               to={bookingData.toLatLon ?? undefined}
               routePoints={routePoints.length >= 2 ? routePoints : undefined}
+              geoJson={routeGeoJson ?? undefined}
               className="w-full h-[320px] rounded-lg"
             />
           </div>

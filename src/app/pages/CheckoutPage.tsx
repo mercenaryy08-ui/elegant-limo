@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
@@ -85,24 +85,22 @@ export function CheckoutPage() {
     mode: 'onSubmit',
   });
 
-  // Sync form from summary: when customer details exist in booking, populate form so validation sees them
+  // Sync form from summary contact details (runs once on mount)
+  const cFirst = bookingData.customerDetails?.firstName ?? '';
+  const cLast = bookingData.customerDetails?.lastName ?? '';
+  const cEmail = bookingData.customerDetails?.email ?? '';
+  const cPhone = bookingData.customerDetails?.phone ?? '';
+  const cReqs = bookingData.customerDetails?.specialRequests ?? '';
   useEffect(() => {
-    const c = bookingData.customerDetails;
-    if (c?.firstName || c?.lastName || c?.email || c?.phone) {
-      reset(
-        {
-          firstName: c.firstName ?? '',
-          lastName: c.lastName ?? '',
-          email: c.email ?? '',
-          phone: c.phone ?? '',
-          specialRequests: c.specialRequests ?? '',
-          termsAccepted: false,
-          cancellationAccepted: false,
-        },
-        { keepDefaultValues: false }
-      );
+    if (cFirst || cLast || cEmail || cPhone) {
+      setValue('firstName', cFirst);
+      setValue('lastName', cLast);
+      setValue('email', cEmail);
+      setValue('phone', cPhone);
+      setValue('specialRequests', cReqs);
     }
-  }, [bookingData.customerDetails?.firstName, bookingData.customerDetails?.lastName, bookingData.customerDetails?.email, bookingData.customerDetails?.phone, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cFirst, cLast, cEmail, cPhone]);
 
   const termsAccepted = watch('termsAccepted');
   const cancellationAccepted = watch('cancellationAccepted');

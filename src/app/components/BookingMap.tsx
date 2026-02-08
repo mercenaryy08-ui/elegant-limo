@@ -19,6 +19,7 @@ interface BookingMapProps {
   from?: LatLon | null;
   to?: LatLon | null;
   routePoints?: { lat: number; lng: number }[];
+  geoJson?: unknown; // raw GeoJSON geometry for L.geoJSON rendering
   className?: string;
 }
 
@@ -27,6 +28,7 @@ export function BookingMap({
   from,
   to,
   routePoints,
+  geoJson,
   className = '',
 }: BookingMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -88,7 +90,17 @@ export function BookingMap({
       bounds.push({ lat: to.lat, lng: to.lng });
     }
 
-    if (routePoints && routePoints.length >= 2) {
+    if (geoJson) {
+      // Use L.geoJSON for proper road geometry from OSRM
+      const layer = L.geoJSON(geoJson as GeoJSON.GeoJsonObject, {
+        style: { color: '#2563eb', weight: 5, opacity: 0.75 },
+      }).addTo(map);
+      polylineRef.current = layer as unknown as L.Polyline;
+      const gjBounds = layer.getBounds();
+      if (gjBounds.isValid()) {
+        bounds.push(gjBounds.getSouthWest(), gjBounds.getNorthEast());
+      }
+    } else if (routePoints && routePoints.length >= 2) {
       const latlngs: [number, number][] = routePoints.map((p) => [p.lat, p.lng]);
       const poly = L.polyline(latlngs, {
         color: '#d4af37',
@@ -114,7 +126,7 @@ export function BookingMap({
     } else if (bounds.length === 1) {
       map.setView(bounds[0], 12);
     }
-  }, [from, to, routePoints]);
+  }, [from, to, routePoints, geoJson]);
 
   return (
     <div
