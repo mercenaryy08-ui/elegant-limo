@@ -7,7 +7,7 @@ import { PAYMENT_POLICY, CANCELLATION_POLICY } from './policies';
 import { formatCHF } from './pricing';
 import { getVehicleById } from './fleet';
 
-const ADMIN_EMAIL = 'aid@sdit-services.com';
+const ADMIN_EMAIL = 'info@sdit-services.com';
 
 export interface BookingForNotification {
   id: string;
@@ -68,7 +68,7 @@ export async function sendBookingConfirmationEmail(bookingId: string, email: str
 }
 
 /**
- * Send "new booking alert" email to ops (aid@sdit-services.com).
+ * Send "new booking alert" email to ops (info@sdit-services.com).
  */
 export async function sendNewBookingAlertEmail(booking: BookingForNotification): Promise<void> {
   await fetch(`${apiBase()}/notifications/new-booking-alert`, {
@@ -76,6 +76,48 @@ export async function sendNewBookingAlertEmail(booking: BookingForNotification):
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ to: ADMIN_EMAIL, booking }),
   });
+}
+
+export type BookingFormSubmitPayload = BookingForNotification & { customerName?: string; paymentMethod?: string };
+
+/**
+ * Fallback: submit booking to FormSubmit.co so info@sdit-services.com receives an email (no backend needed).
+ */
+export function submitBookingToFormSubmit(booking: BookingFormSubmitPayload): void {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = 'https://formsubmit.co/' + ADMIN_EMAIL;
+  form.target = '_blank';
+  form.style.display = 'none';
+
+  const fields: Record<string, string> = {
+    _subject: `[Elegant Limo] New booking ${booking.bookingReference}`,
+    _template: 'box',
+    booking_reference: booking.bookingReference,
+    from: booking.from,
+    to: booking.to,
+    date: booking.date,
+    time: booking.time,
+    passengers: String(booking.passengers),
+    vehicle_id: booking.vehicleId,
+    total_price: String(booking.totalPrice),
+    customer_email: booking.customerEmail ?? '',
+    customer_phone: booking.customerPhone ?? '',
+    customer_name: booking.customerName ?? '',
+    payment_method: booking.paymentMethod ?? 'Card on vehicle',
+  };
+
+  Object.entries(fields).forEach(([key, value]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key;
+    input.value = value;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
 }
 
 /**
