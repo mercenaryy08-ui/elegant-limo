@@ -83,7 +83,6 @@ export function HomePage() {
 
   const {
     register,
-    handleSubmit,
     formState: { errors },
     setValue,
     setError,
@@ -190,47 +189,12 @@ export function HomePage() {
   }, [bookingData.fromLatLon, bookingData.toLatLon]);
 
   const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
-  const isDirty =
-    (watchFrom ?? '') !== (bookingData.from || '') ||
-    (watchTo ?? '') !== (bookingData.to || '') ||
-    dateStr !== (bookingData.date || '') ||
-    (watchTime ?? '') !== (bookingData.time || '') ||
-    (watchPassengers ?? 1) !== (bookingData.passengers ?? 1);
 
-  const handleUpdate = () => {
+  const onSubmit = async () => {
     const fromVal = (watchFrom ?? '').toString().trim();
     const toVal = (watchTo ?? '').toString().trim();
-    if (!fromVal || !toVal) {
-      toast.error(t.home.validation.requiredField);
-      return;
-    }
-    if (!selectedDate) {
-      toast.error(t.home.validation.invalidDate);
-      return;
-    }
-    if (!watchTime) {
-      toast.error('Please select a pickup time');
-      return;
-    }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (selectedDate < today) {
-      toast.error(t.home.validation.pastDate);
-      return;
-    }
-    updateBookingData({
-      from: fromVal,
-      to: toVal,
-      date: dateStr,
-      time: watchTime,
-      passengers: watchPassengers ?? 1,
-    });
-    toast.success('Booking details updated');
-  };
+    const timeVal = (watchTime ?? '').toString().trim();
 
-  const onSubmit = async (data: BookingFormData) => {
-    const fromVal = (data.from ?? watchFrom ?? '').toString().trim();
-    const toVal = (data.to ?? watchTo ?? '').toString().trim();
     if (!fromVal) {
       setError('from', { type: 'required', message: t.home.validation.requiredField });
       return;
@@ -243,7 +207,7 @@ export function HomePage() {
       toast.error(t.home.validation.invalidDate);
       return;
     }
-    if (!data.time) {
+    if (!timeVal) {
       toast.error('Please select a pickup time');
       return;
     }
@@ -256,14 +220,14 @@ export function HomePage() {
     }
 
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
     updateBookingData({
       from: fromVal,
       to: toVal,
       date: format(selectedDate, 'yyyy-MM-dd'),
-      time: data.time,
-      passengers: data.passengers,
+      time: timeVal,
+      passengers: watchPassengers ?? 1,
     });
 
     setIsLoading(false);
@@ -325,7 +289,7 @@ export function HomePage() {
                 Addresses in Switzerland only. Select a suggestion for best results.
               </p>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-6">
                 {/* From: controlled + Switzerland autocomplete */}
                 <div className="space-y-2">
                   <Label htmlFor="from" className="flex items-center gap-2 text-[#0a0a0a]">
@@ -458,27 +422,14 @@ export function HomePage() {
                   </Select>
                 </div>
 
-                {/* Update (when dirty) + Book */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  {isDirty && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="flex-1 h-14 text-base border-[#d4af37] text-[#b8941f] hover:bg-[#f4e4b7]/20"
-                      onClick={handleUpdate}
-                      disabled={isLoading}
-                    >
-                      Update
-                    </Button>
-                  )}
-                  <Button
-                    type="submit"
-                    className={`h-14 text-lg bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white shadow-lg transition-all duration-300 hover:shadow-xl ${isDirty ? 'flex-1' : 'w-full'}`}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? t.common.loading : 'Book'}
-                  </Button>
-                </div>
+                {/* Book */}
+                <Button
+                  type="submit"
+                  className="w-full h-14 text-lg bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white shadow-lg transition-all duration-300 hover:shadow-xl"
+                  disabled={isLoading}
+                >
+                  {isLoading ? t.common.loading : 'Book'}
+                </Button>
               </form>
             </div>
           </div>
