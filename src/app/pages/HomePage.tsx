@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { CalendarIcon, MapPin, Clock, Users } from 'lucide-react';
 import { format } from 'date-fns';
@@ -36,6 +37,7 @@ interface BookingFormData {
 }
 
 export function HomePage() {
+  const navigate = useNavigate();
   const { bookingData, updateBookingData } = useBooking();
   const t = useTranslations('en');
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -69,11 +71,11 @@ export function HomePage() {
       setOpsPinOpen(false);
       setOpsPinValue('');
       setOpsPinError('');
-      window.location.href = 'ops.html';
+      navigate('/ops');
     } else {
       setOpsPinError('Wrong PIN');
     }
-  }, [opsPinValue]);
+  }, [opsPinValue, navigate]);
 
   const {
     register,
@@ -170,7 +172,7 @@ export function HomePage() {
     });
 
     setIsLoading(false);
-    window.location.href = 'summary.html';
+    navigate('/summary');
   };
 
   return (
