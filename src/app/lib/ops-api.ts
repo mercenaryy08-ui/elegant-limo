@@ -1,11 +1,15 @@
 /**
  * Ops/Admin API: bookings list, resend email, decline, working hours (closed slots).
- * In production, replace the mock implementations with real fetch() to your backend.
+ * Uses localStorage-based bookings store for persistence without a backend.
  */
 
 import type { ClosedSlot } from './availability';
 import { closedSlotManager } from './admin-config';
 import { getVehicleById } from './fleet';
+import {
+  getBookings as storeGetBookings,
+  updateBookingStatus as storeUpdateStatus,
+} from './bookings-store';
 
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
@@ -31,65 +35,29 @@ export interface AdminBooking {
   updatedAt: string;
 }
 
-const apiBase = () =>
-  (import.meta as unknown as { env: Record<string, string> }).env?.VITE_API_BASE_URL ?? '';
-
-/** Fetch all bookings (admin). In production: GET /api/admin/bookings */
+/** Fetch all bookings from localStorage store */
 export async function fetchBookings(params?: {
   status?: BookingStatus;
   startDate?: string;
   endDate?: string;
 }): Promise<AdminBooking[]> {
-  if (apiBase()) {
-    const q = new URLSearchParams();
-    if (params?.status) q.set('status', params.status);
-    if (params?.startDate) q.set('startDate', params.startDate);
-    if (params?.endDate) q.set('endDate', params.endDate);
-    const res = await fetch(`${apiBase()}/api/admin/bookings?${q}`);
-    if (res.ok) {
-      const data = await res.json();
-      return data.data?.bookings ?? data.bookings ?? [];
-    }
-  }
-  return getMockBookings();
+  return storeGetBookings(params);
 }
 
-/** Resend confirmation email. In production: POST /api/admin/bookings/:id/resend-confirmation */
+/** Resend confirmation email (placeholder — logs to console) */
 export async function resendBookingConfirmation(bookingId: string): Promise<void> {
-  if (apiBase()) {
-    await fetch(`${apiBase()}/api/admin/bookings/${bookingId}/resend-confirmation`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return;
-  }
-  await new Promise((r) => setTimeout(r, 400));
+  console.log('Resend confirmation for:', bookingId);
+  await new Promise((r) => setTimeout(r, 300));
 }
 
-/** Decline/cancel booking. In production: PATCH /api/admin/bookings/:id/status with status: 'cancelled' */
-export async function declineBooking(bookingId: string, reason?: string): Promise<void> {
-  if (apiBase()) {
-    await fetch(`${apiBase()}/api/admin/bookings/${bookingId}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'cancelled', declineReason: reason }),
-    });
-    return;
-  }
-  await new Promise((r) => setTimeout(r, 400));
+/** Decline/cancel booking — updates localStorage */
+export async function declineBooking(bookingId: string, _reason?: string): Promise<void> {
+  storeUpdateStatus(bookingId, 'cancelled');
 }
 
-/** Confirm a pending booking. In production: PATCH .../status with status: 'confirmed' */
+/** Confirm a pending booking — updates localStorage */
 export async function confirmBooking(bookingId: string): Promise<void> {
-  if (apiBase()) {
-    await fetch(`${apiBase()}/api/admin/bookings/${bookingId}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'confirmed' }),
-    });
-    return;
-  }
-  await new Promise((r) => setTimeout(r, 400));
+  storeUpdateStatus(bookingId, 'confirmed');
 }
 
 // —— Closed slots (working hours): use in-memory manager; in production call API ——
@@ -123,50 +91,4 @@ export function deleteClosedSlot(id: string): boolean {
 export function getVehicleName(vehicleId: string): string {
   const v = getVehicleById(vehicleId);
   return v ? `${v.name} (${v.className})` : vehicleId;
-}
-
-function getMockBookings(): AdminBooking[] {
-  return [
-    {
-      id: 'mock-1',
-      bookingReference: 'EL12345001',
-      status: 'pending',
-      from: 'Zürich Airport',
-      to: 'Zürich City',
-      date: new Date().toISOString().slice(0, 10),
-      time: '14:00',
-      passengers: 2,
-      vehicleId: 'vehicle-premium-sclass',
-      totalPrice: 100,
-      customerDetails: {
-        firstName: 'Anna',
-        lastName: 'Muster',
-        email: 'anna@example.com',
-        phone: '+41 79 123 4567',
-        specialRequests: 'Flight LX 123',
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'mock-2',
-      bookingReference: 'EL12345002',
-      status: 'confirmed',
-      from: 'Genève Airport',
-      to: 'Lausanne',
-      date: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
-      time: '10:00',
-      passengers: 3,
-      vehicleId: 'vehicle-van-vclass',
-      totalPrice: 280,
-      customerDetails: {
-        firstName: 'Max',
-        lastName: 'Example',
-        email: 'max@example.com',
-        phone: '+41 78 987 6543',
-      },
-      createdAt: new Date(Date.now() - 86400000).toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  ];
 }

@@ -36,6 +36,7 @@ import {
 import { CalendarPlus, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { getVehicleById } from '../lib/fleet';
+import { addBooking } from '../lib/bookings-store';
 
 const WHATSAPP_NUMBER = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_WHATSAPP_NUMBER || '38348263151';
 import { formatCHF, ADD_ONS } from '../lib/pricing';
@@ -118,6 +119,29 @@ export function CheckoutPage() {
       customerName: [data.firstName, data.lastName].filter(Boolean).join(' ') || [bookingData.customerDetails?.firstName, bookingData.customerDetails?.lastName].filter(Boolean).join(' '),
       paymentMethod: bookingData.paymentMethod ?? 'Credit card in vehicle',
     };
+
+    // Persist booking to localStorage so ops dashboard/calendar can see it
+    addBooking({
+      id: bookingId,
+      bookingReference: reference,
+      status: 'confirmed',
+      from: bookingData.from,
+      to: bookingData.to,
+      date: bookingData.date,
+      time: bookingData.time,
+      passengers: bookingData.passengers,
+      vehicleId: bookingData.vehicleId!,
+      totalPrice,
+      customerDetails: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone,
+        specialRequests: data.specialRequests,
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
 
     // Send booking notification via FormSubmit (AJAX, no redirect)
     try {
