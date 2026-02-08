@@ -1,9 +1,8 @@
-import { useState, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { CalendarIcon, MapPin, Clock, Users } from 'lucide-react';
 import { format } from 'date-fns';
-import { useBooking } from '../contexts/BookingContext';
+import { useBooking, type BookingData } from '../contexts/BookingContext';
 import { useTranslations } from '../lib/translations';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -37,7 +36,6 @@ interface BookingFormData {
 }
 
 export function HomePage() {
-  const navigate = useNavigate();
   const { bookingData, updateBookingData } = useBooking();
   const t = useTranslations('en');
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -71,11 +69,11 @@ export function HomePage() {
       setOpsPinOpen(false);
       setOpsPinValue('');
       setOpsPinError('');
-      navigate('/ops');
+      window.location.href = 'ops.html';
     } else {
       setOpsPinError('Wrong PIN');
     }
-  }, [opsPinValue, navigate]);
+  }, [opsPinValue]);
 
   const {
     register,
@@ -96,6 +94,46 @@ export function HomePage() {
   const watchFrom = watch('from');
   const watchTo = watch('to');
   const watchPassengers = watch('passengers');
+
+  // Pre-fill from Hostinger hero (URL params: from, to, date, fromLat, fromLon, toLat, toLon)
+  useEffect(() => {
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+    const from = params.get('from')?.trim();
+    const to = params.get('to')?.trim();
+    const dateStr = params.get('date')?.trim();
+    const fromLat = params.get('fromLat');
+    const fromLon = params.get('fromLon');
+    const toLat = params.get('toLat');
+    const toLon = params.get('toLon');
+
+    const updates: Partial<BookingData> = {};
+    if (from) {
+      setValue('from', from);
+      updates.from = from;
+    }
+    if (to) {
+      setValue('to', to);
+      updates.to = to;
+    }
+    if (dateStr) {
+      const d = new Date(dateStr);
+      if (!isNaN(d.getTime())) {
+        setSelectedDate(d);
+        updates.date = dateStr;
+      }
+    }
+    if (fromLat && fromLon) {
+      const lat = parseFloat(fromLat);
+      const lng = parseFloat(fromLon);
+      if (!isNaN(lat) && !isNaN(lng)) updates.fromLatLon = { lat, lng };
+    }
+    if (toLat && toLon) {
+      const lat = parseFloat(toLat);
+      const lng = parseFloat(toLon);
+      if (!isNaN(lat) && !isNaN(lng)) updates.toLatLon = { lat, lng };
+    }
+    if (Object.keys(updates).length) updateBookingData(updates);
+  }, [setValue, updateBookingData]);
 
   const onSubmit = async (data: BookingFormData) => {
     const fromVal = (data.from ?? watchFrom ?? '').toString().trim();
@@ -132,7 +170,7 @@ export function HomePage() {
     });
 
     setIsLoading(false);
-    navigate('/summary');
+    window.location.href = 'summary.html';
   };
 
   return (

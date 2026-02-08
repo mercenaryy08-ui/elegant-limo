@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elegant Limo Switzerland | VIP Airport Transfers</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: { 400:'#D4AF37', 500:'#C5A028', 600:'#B08D22' },
+            dark: { 900:'#0f172a', 800:'#1e293b' }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+    .glass-panel{
+      background: rgba(15, 23, 42, 0.90);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .el-suggestions::-webkit-scrollbar { width: 10px; }
+    .el-suggestions::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 999px; }
+  </style>
+</head>
+<body class="bg-[#f8fafc] antialiased">
+  <section class="relative w-full min-h-[600px] flex flex-col justify-center items-center overflow-hidden bg-[#f8fafc]">
+    <div class="relative z-10 container mx-auto px-4 text-center py-16 md:py-24">
+      <div class="mb-10">
+        <span class="inline-block py-1 px-3 rounded-full bg-gold-500/10 border border-gold-400/40 text-gold-600 text-xs font-semibold tracking-widest uppercase mb-4">
+          Elegant Limo Switzerland • Airport &amp; City Transfers
+        </span>
+        <h1 class="text-4xl md:text-6xl lg:text-7xl font-serif text-slate-900 mb-6 leading-tight">
+          Your <span class="italic text-gold-500">Swiss transfer</span> in VIP comfort.
+        </h1>
+        <p class="text-slate-600 text-lg md:text-xl max-w-2xl mx-auto font-light">
+          Professional, discreet and punctual chauffeur service across Zurich, Geneva and the Swiss Alps.
+        </p>
+      </div>
+
+      <div class="glass-panel p-6 md:p-8 rounded-2xl shadow-2xl max-w-5xl mx-auto">
+        <form id="tripForm" onsubmit="goToBooking(event)" class="flex flex-col md:flex-row gap-4 items-end">
+          <!-- From -->
+          <div class="w-full text-left group">
+            <label for="pickup" class="block text-gray-300 text-xs uppercase tracking-wider font-semibold mb-2 ml-1">From</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gold-400 group-focus-within:text-gold-500 transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <input type="text" id="pickup" required autocomplete="off" data-autocomplete="place"
+                class="w-full pl-10 pr-4 py-3 bg-white/10 border border-slate-500 text-white placeholder-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500 transition-all"
+                placeholder="Zurich Airport (ZRH)">
+            </div>
+          </div>
+          <div class="hidden md:flex pb-3 text-slate-400" aria-hidden="true">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
+          </div>
+          <!-- To -->
+          <div class="w-full text-left group">
+            <label for="dropoff" class="block text-gray-300 text-xs uppercase tracking-wider font-semibold mb-2 ml-1">To</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gold-400 group-focus-within:text-gold-500 transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-8a2 2 0 012-2h14a2 2 0 012 2v8M3 13l4-8h10l4 8" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17h6" />
+                </svg>
+              </div>
+              <input type="text" id="dropoff" required autocomplete="off" data-autocomplete="place"
+                class="w-full pl-10 pr-4 py-3 bg-white/10 border border-slate-500 text-white placeholder-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500 transition-all"
+                placeholder="St. Moritz">
+            </div>
+          </div>
+          <!-- Date -->
+          <div class="w-full md:w-2/3 text-left group">
+            <label for="date" class="block text-gray-300 text-xs uppercase tracking-wider font-semibold mb-2 ml-1">Date</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gold-400 group-focus-within:text-gold-500 transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <input type="date" id="date" required
+                class="w-full pl-10 pr-4 py-3 bg-white/10 border border-slate-500 text-white placeholder-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500 transition-all">
+            </div>
+          </div>
+          <button type="submit"
+            class="w-full md:w-auto bg-gradient-to-r from-gold-600 to-gold-400 hover:from-gold-500 hover:to-gold-300 text-black font-bold py-3.5 px-8 rounded-lg shadow-lg transform transition hover:-translate-y-0.5 hover:shadow-gold-500/20 whitespace-nowrap flex items-center justify-center gap-2">
+            <span>Continue</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <p class="mt-4 text-slate-500 text-sm flex items-center justify-center gap-2">
+        <svg class="w-4 h-4 text-gold-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+        </svg>
+        Best price guarantee &amp; free cancellation.
+      </p>
+    </div>
+  </section>
+
+  <script>
+    const dateInput = document.getElementById('date');
+    if (dateInput) dateInput.min = new Date().toISOString().split("T")[0];
+
+    const NOMINATIM_ENDPOINT = 'https://nominatim.openstreetmap.org/search';
+    function debounce(fn, delay) {
+      let timeout;
+      return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn.apply(this, args), delay);
+      };
+    }
+    async function fetchPlaceSuggestions(query) {
+      const url = NOMINATIM_ENDPOINT + '?format=jsonv2&addressdetails=1&limit=6&q=' + encodeURIComponent(query);
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) return [];
+      return await res.json();
+    }
+    function createSuggestionsContainer(wrapper) {
+      let existing = wrapper.querySelector('.el-suggestions');
+      if (existing) return existing;
+      const div = document.createElement('div');
+      div.className = 'el-suggestions absolute left-0 right-0 mt-1 bg-slate-900/95 border border-slate-700 rounded-lg shadow-xl max-h-64 overflow-y-auto z-30 backdrop-blur';
+      wrapper.appendChild(div);
+      return div;
+    }
+    function clearSuggestions(container) {
+      if (!container) return;
+      container.innerHTML = '';
+      container.style.display = 'none';
+    }
+    function showSuggestions(input, results) {
+      const wrapper = input.closest('.relative');
+      if (!wrapper) return;
+      const container = createSuggestionsContainer(wrapper);
+      container.innerHTML = '';
+      if (!results.length) { container.style.display = 'none'; return; }
+      results.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'px-3 py-2 text-sm text-slate-100 hover:bg-slate-800 cursor-pointer flex gap-2';
+        const icon = document.createElement('span');
+        icon.textContent = '📍';
+        icon.className = 'mt-[1px] text-base';
+        const textWrap = document.createElement('div');
+        const main = document.createElement('div');
+        main.className = 'font-medium';
+        const mainText = (item.display_name || '').split(',')[0] || item.display_name;
+        main.textContent = mainText;
+        const sub = document.createElement('div');
+        sub.className = 'text-xs text-slate-400';
+        sub.textContent = (item.display_name || '').replace(mainText + ',', '').trim();
+        textWrap.appendChild(main);
+        if (sub.textContent) textWrap.appendChild(sub);
+        row.appendChild(icon);
+        row.appendChild(textWrap);
+        row.addEventListener('click', () => {
+          input.value = item.display_name || '';
+          input.dataset.lat = item.lat || '';
+          input.dataset.lon = item.lon || '';
+          clearSuggestions(container);
+        });
+        container.appendChild(row);
+      });
+      container.style.display = 'block';
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const autoInputs = document.querySelectorAll('input[data-autocomplete="place"]');
+      autoInputs.forEach(input => {
+        const handler = debounce(async () => {
+          const value = input.value.trim();
+          const wrapper = input.closest('.relative');
+          const container = wrapper ? createSuggestionsContainer(wrapper) : null;
+          if (value.length < 3) { clearSuggestions(container); return; }
+          try {
+            const results = await fetchPlaceSuggestions(value + ' Switzerland');
+            showSuggestions(input, results);
+          } catch { clearSuggestions(container); }
+        }, 350);
+        input.addEventListener('input', handler);
+        input.addEventListener('blur', () => {
+          setTimeout(() => {
+            const wrapper = input.closest('.relative');
+            const container = wrapper && wrapper.querySelector('.el-suggestions');
+            clearSuggestions(container);
+          }, 180);
+        });
+        input.addEventListener('input', () => {
+          delete input.dataset.lat;
+          delete input.dataset.lon;
+        });
+      });
+    });
+
+    // Redirect to Vercel booking app with query params (form pre-fills there)
+    function goToBooking(e) {
+      e.preventDefault();
+      const pickupEl = document.getElementById('pickup');
+      const dropoffEl = document.getElementById('dropoff');
+      const dateEl = document.getElementById('date');
+      const pickup = pickupEl.value.trim();
+      const dropoff = dropoffEl.value.trim();
+      const date = dateEl.value;
+      const fromLat = pickupEl.dataset.lat || '';
+      const fromLon = pickupEl.dataset.lon || '';
+      const toLat = dropoffEl.dataset.lat || '';
+      const toLon = dropoffEl.dataset.lon || '';
+
+      const baseUrl = 'https://elegant-limo.vercel.app';
+      const params = new URLSearchParams({
+        from: pickup,
+        to: dropoff,
+        date: date,
+        fromLat: fromLat,
+        fromLon: fromLon,
+        toLat: toLat,
+        toLon: toLon
+      });
+      const targetUrl = baseUrl + '/?' + params.toString();
+      (window.top || window).location.href = targetUrl;
+    }
+  </script>
+</body>
+</html>
