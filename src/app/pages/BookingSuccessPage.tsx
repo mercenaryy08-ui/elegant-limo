@@ -41,7 +41,7 @@ interface SessionBooking {
 export function BookingSuccessPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const language = useLanguage();
+  const { language } = useLanguage();
   const t = useTranslations(language);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [booking, setBooking] = useState<SessionBooking | null>(null);

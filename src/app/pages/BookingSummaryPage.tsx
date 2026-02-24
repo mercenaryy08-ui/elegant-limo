@@ -48,7 +48,7 @@ const VEHICLE_CARDS = [
 
 export function BookingSummaryPage() {
   const navigate = useNavigate();
-  const language = useLanguage();
+  const { language } = useLanguage();
   const t = useTranslations(language);
   const { bookingData, updateBookingData } = useBooking();
   const [routePoints, setRoutePoints] = useState<{ lat: number; lng: number }[]>([]);

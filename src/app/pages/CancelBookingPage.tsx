@@ -14,7 +14,7 @@ const getApiBase = () =>
 
 export function CancelBookingPage() {
   const navigate = useNavigate();
-  const language = useLanguage();
+  const { language } = useLanguage();
   const t = useTranslations(language);
   const [bookingReference, setBookingReference] = useState('');
   const [email, setEmail] = useState('');

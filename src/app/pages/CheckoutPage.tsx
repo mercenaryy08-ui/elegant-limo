@@ -47,7 +47,7 @@ interface CheckoutFormData {
 
 export function CheckoutPage() {
   const navigate = useNavigate();
-  const language = useLanguage();
+  const { language } = useLanguage();
   const t = useTranslations(language);
   const { bookingData, updateBookingData } = useBooking();
   const [isSubmitting, setIsSubmitting] = useState(false);
