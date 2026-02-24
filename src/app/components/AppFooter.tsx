@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslations } from '../lib/translations';
 import { ThemeToggle } from './ThemeToggle';
 
 export function AppFooter() {
@@ -8,6 +9,7 @@ export function AppFooter() {
   const location = useLocation();
   const { theme } = useTheme();
   const { language, setLanguage } = useLanguage();
+  const t = useTranslations(language);
   const isOps = location.pathname.startsWith('/ops');
 
   const handleElegantLimoClick = () => {
@@ -29,6 +31,14 @@ export function AppFooter() {
                   aria-label="Elegant Limo"
                 >
                   Elegant Limo
+                </button>
+                <span className="text-muted-foreground hidden sm:inline">·</span>
+                <button
+                  type="button"
+                  onClick={() => navigate('/cancel-booking')}
+                  className="text-foreground/80 hover:text-[#d4af37] transition-colors cursor-pointer bg-transparent border-none text-xs sm:text-sm"
+                >
+                  {t.cancelBooking.pageTitle}
                 </button>
                 <span className="text-muted-foreground hidden sm:inline">·</span>
               </>

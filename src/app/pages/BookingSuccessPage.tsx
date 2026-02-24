@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { CheckCircle2, CalendarPlus, MessageCircle } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslations } from '../lib/translations';
 import { Button } from '../components/ui/button';
 import {
   Dialog,
@@ -39,6 +41,8 @@ interface SessionBooking {
 export function BookingSuccessPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const language = useLanguage();
+  const t = useTranslations(language);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [booking, setBooking] = useState<SessionBooking | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
@@ -128,7 +132,7 @@ export function BookingSuccessPage() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-[#d4af37] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Confirming your payment...</p>
+          <p className="text-muted-foreground">{t.success.confirmingPayment}</p>
         </div>
       </div>
     );
@@ -138,10 +142,10 @@ export function BookingSuccessPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="text-center max-w-md">
-          <p className="text-destructive font-medium mb-2">We couldn't confirm your booking.</p>
+          <p className="text-destructive font-medium mb-2">{t.success.couldNotConfirm}</p>
           <p className="text-sm text-muted-foreground mb-6">{errorMessage}</p>
           <Button onClick={() => navigate('/')} className="bg-[#d4af37] hover:bg-[#b8941f] text-white">
-            Return to home
+            {t.success.returnHome}
           </Button>
         </div>
       </div>
@@ -173,19 +177,19 @@ export function BookingSuccessPage() {
               <CheckCircle2 className="w-8 h-8 text-white" />
             </div>
             <DialogTitle className="text-2xl text-center text-[#0a0a0a">
-              Payment complete – booking confirmed
+              {t.success.paymentComplete}
             </DialogTitle>
             <DialogDescription className="text-center space-y-4 pt-4">
               <p className="text-muted-foreground">
-                A confirmation and receipt have been sent to your email.
+                {t.success.confirmationSent}
               </p>
               {booking.date && (
                 <p className="text-sm font-medium text-[#0a0a0a]">
-                  Pickup: {format(new Date(booking.date), 'PPP')} at {booking.time}
+                  {t.success.pickupAt}: {format(new Date(booking.date), 'PPP')} at {booking.time}
                 </p>
               )}
               <div className="bg-[#fafafa] p-4 rounded-lg border border-[#d4af37]/20">
-                <p className="text-xs text-muted-foreground mb-1">Booking ID</p>
+                <p className="text-xs text-muted-foreground mb-1">{t.success.bookingId}</p>
                 <p className="text-xl font-bold text-[#d4af37] tracking-wider">{booking.bookingReference}</p>
               </div>
               <div className="flex flex-col gap-2">
@@ -196,7 +200,7 @@ export function BookingSuccessPage() {
                   className="inline-flex items-center justify-center gap-2 h-11 rounded-lg border border-[#d4af37]/50 bg-[#f4e4b7]/20 text-[#0a0a0a] font-medium hover:bg-[#f4e4b7]/40 transition"
                 >
                   <CalendarPlus className="w-4 h-4" />
-                  Add to Google Calendar
+                  {t.success.addToCalendar}
                 </a>
                 <a
                   href={whatsappUrl}
@@ -205,13 +209,13 @@ export function BookingSuccessPage() {
                   className="inline-flex items-center justify-center gap-2 h-11 rounded-lg border border-[#25D366] bg-[#25D366]/10 text-[#0a0a0a] font-medium hover:bg-[#25D366]/20 transition"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  Contact us on WhatsApp
+                  {t.success.contactWhatsApp}
                 </a>
               </div>
               <div className="bg-[#f4e4b7]/20 border border-[#d4af37]/30 rounded-lg p-4">
-                <p className="text-sm text-[#0a0a0a] font-medium mb-2">Paid online</p>
+                <p className="text-sm text-[#0a0a0a] font-medium mb-2">{t.success.paidOnline}</p>
                 <p className="text-xs text-muted-foreground">
-                  CHF {(booking.totalPrice ?? 0).toFixed(2)} paid by card. Receipt sent to your email.
+                  {t.success.receiptSent.replace('{amount}', (booking.totalPrice ?? 0).toFixed(2))}
                 </p>
               </div>
             </DialogDescription>
@@ -220,8 +224,16 @@ export function BookingSuccessPage() {
             onClick={handleClose}
             className="w-full h-12 bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white"
           >
-            Return to home
+            {t.success.returnHome}
           </Button>
+          <p className="text-center mt-3">
+            <Link
+              to="/cancel-booking"
+              className="text-sm text-muted-foreground hover:text-[#d4af37] underline"
+            >
+              {t.cancelBooking.needToCancelLink}
+            </Link>
+          </p>
         </DialogContent>
       </Dialog>
     </div>

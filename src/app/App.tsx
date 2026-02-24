@@ -5,6 +5,7 @@ import { CalculatePricePage } from './pages/CalculatePricePage';
 import { BookingSummaryPage } from './pages/BookingSummaryPage';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { BookingSuccessPage } from './pages/BookingSuccessPage';
+import { CancelBookingPage } from './pages/CancelBookingPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { OpsGate } from './pages/ops/OpsGate';
 import { OpsLayout } from './pages/ops/OpsLayout';
@@ -17,6 +18,8 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { AppFooter } from './components/AppFooter';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { Analytics } from '@vercel/analytics/react';
 
 export default function App() {
   return (
@@ -34,6 +37,7 @@ export default function App() {
                   <Route path="/calculate-price" element={<Navigate to="/summary" replace />} />
                   <Route path="/checkout" element={<CheckoutPage />} />
                   <Route path="/booking-success" element={<BookingSuccessPage />} />
+                  <Route path="/cancel-booking" element={<CancelBookingPage />} />
                   <Route path="/calendar" element={<CalendarPage />} />
                   <Route path="/ops" element={<OpsGate />}>
                     <Route element={<OpsLayout />}>
@@ -46,6 +50,8 @@ export default function App() {
               </main>
               <AppFooter />
               <FloatingWhatsApp />
+              <SpeedInsights />
+              <Analytics />
             </div>
           </Router>
         </BookingProvider>

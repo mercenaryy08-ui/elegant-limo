@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { MapPin, Clock, Users, Car, CreditCard, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { useBooking } from '../contexts/BookingContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslations } from '../lib/translations';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
@@ -46,6 +48,8 @@ const VEHICLE_CARDS = [
 
 export function BookingSummaryPage() {
   const navigate = useNavigate();
+  const language = useLanguage();
+  const t = useTranslations(language);
   const { bookingData, updateBookingData } = useBooking();
   const [routePoints, setRoutePoints] = useState<{ lat: number; lng: number }[]>([]);
   const [routeGeoJson, setRouteGeoJson] = useState<unknown>(null);
@@ -56,11 +60,11 @@ export function BookingSummaryPage() {
 
   useEffect(() => {
     if (!hasTrip) {
-      toast.error('Please complete the booking form first');
+      toast.error(t.summary.completeFormFirst);
       navigate('/');
       return;
     }
-  }, [hasTrip, navigate]);
+  }, [hasTrip, navigate, t.summary.completeFormFirst]);
 
   const fromLatLon = bookingData.fromLatLon;
   const toLatLon = bookingData.toLatLon;
@@ -107,11 +111,11 @@ export function BookingSummaryPage() {
 
   const recalculateRoute = async () => {
     if (!bookingData.from?.trim() || !bookingData.to?.trim()) {
-      toast.error('Enter both From and To addresses');
+      toast.error(t.summary.enterBothAddresses);
       return;
     }
     if (!bookingData.fromLatLon || !bookingData.toLatLon) {
-      toast.error('Please select addresses from the suggestions to recalculate');
+      toast.error(t.summary.selectAddressesToRecalc);
       return;
     }
     setRecalculating(true);
@@ -123,9 +127,9 @@ export function BookingSummaryPage() {
         distance: info.distanceKm,
         estimatedDuration: info.durationMinutes,
       });
-      toast.success('Route and price updated');
+      toast.success(t.summary.routeUpdated);
     } catch {
-      toast.error('Could not recalculate route');
+      toast.error(t.summary.recalcError);
     } finally {
       setRecalculating(false);
     }
@@ -149,7 +153,7 @@ export function BookingSummaryPage() {
 
   const handleContinue = () => {
     if (!selectedVehicleId) {
-      toast.error('Please choose a vehicle');
+      toast.error(t.summary.chooseVehicleToast);
       return;
     }
     const price = vehiclePrices[selectedVehicleId] ?? 0;
@@ -169,18 +173,18 @@ export function BookingSummaryPage() {
     <div className="min-h-screen bg-[#f8fafc]">
       <header className="border-b border-[#d4af37]/20 bg-white sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-serif text-[#0f172a]">Elegant Limo Switzerland</h1>
-          <p className="text-sm text-slate-500">Review your booking & choose your car</p>
+          <h1 className="text-2xl font-serif text-[#0f172a]">{t.summary.pageTitle}</h1>
+          <p className="text-sm text-slate-500">{t.summary.pageSubtitle}</p>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* 1. Trip details (editable From/To) */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-          <h2 className="text-xl font-serif font-bold mb-4 border-b pb-2">1. Trip details</h2>
+          <h2 className="text-xl font-serif font-bold mb-4 border-b pb-2">1. {t.summary.tripDetails}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
-              <Label className="text-xs font-bold uppercase text-gray-500">Pickup</Label>
+              <Label className="text-xs font-bold uppercase text-gray-500">{t.summary.pickup}</Label>
               <AddressAutocomplete
                 id="summary-from"
                 value={bookingData.from}
@@ -193,7 +197,7 @@ export function BookingSummaryPage() {
               />
             </div>
             <div>
-              <Label className="text-xs font-bold uppercase text-gray-500">Dropoff</Label>
+              <Label className="text-xs font-bold uppercase text-gray-500">{t.summary.dropoff}</Label>
               <AddressAutocomplete
                 id="summary-to"
                 value={bookingData.to}
@@ -213,14 +217,14 @@ export function BookingSummaryPage() {
                 disabled={recalculating}
                 className="border-[#1e293b] text-[#1e293b] hover:bg-slate-100"
               >
-                {recalculating ? 'Calculating…' : 'Recalculate route & price'}
+                {recalculating ? t.summary.calculating : t.summary.recalculate}
               </Button>
             </div>
           </div>
           <div className="flex flex-wrap gap-4 text-sm text-slate-600">
-            <span><strong>Date:</strong> {bookingData.date && format(new Date(bookingData.date), 'PPP')}</span>
-            <span><strong>Time:</strong> {bookingData.time}</span>
-            <span><strong>Passengers:</strong> {bookingData.passengers}</span>
+            <span><strong>{t.summary.date}:</strong> {bookingData.date && format(new Date(bookingData.date), 'PPP')}</span>
+            <span><strong>{t.summary.time}:</strong> {bookingData.time}</span>
+            <span><strong>{t.summary.passengers}:</strong> {bookingData.passengers}</span>
           </div>
         </section>
 
@@ -236,14 +240,14 @@ export function BookingSummaryPage() {
             />
           </div>
           <div className="bg-[#0f172a] text-white p-6 rounded-xl flex flex-col justify-center">
-            <h3 className="text-[#D4AF37] font-serif text-xl mb-4">Route overview</h3>
+            <h3 className="text-[#D4AF37] font-serif text-xl mb-4">{t.summary.routeOverview}</h3>
             <div className="space-y-4 border-b border-gray-700 pb-3">
               <div className="flex justify-between">
-                <span className="text-gray-400 text-sm uppercase">Distance</span>
+                <span className="text-gray-400 text-sm uppercase">{t.summary.distance}</span>
                 <span className="text-xl font-bold">{distance ? `${distance} km` : '––– km'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400 text-sm uppercase">Est. duration</span>
+                <span className="text-gray-400 text-sm uppercase">{t.summary.estDuration}</span>
                 <span className="text-xl font-bold">
                   {duration ? `${Math.floor(duration / 60)}h ${duration % 60}m` : '––– min'}
                 </span>
@@ -251,7 +255,7 @@ export function BookingSummaryPage() {
             </div>
             {selectedVehicleId && vehiclePrices[selectedVehicleId] != null && (
               <div className="pt-4">
-                <span className="text-gray-400 text-sm uppercase block mb-1">Estimated price</span>
+                <span className="text-gray-400 text-sm uppercase block mb-1">{t.summary.estimatedPrice}</span>
                 <span className="text-4xl font-serif text-[#D4AF37]">
                   CHF {Math.round(vehiclePrices[selectedVehicleId])}
                 </span>
@@ -262,7 +266,7 @@ export function BookingSummaryPage() {
 
         {/* 2. Choose vehicle */}
         <section className="mb-8">
-          <h2 className="text-xl font-serif font-bold mb-4">2. Choose your vehicle</h2>
+          <h2 className="text-xl font-serif font-bold mb-4">2. {t.summary.chooseVehicle}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {VEHICLE_CARDS.map((card) => {
               const vehicle = getVehicleById(card.id);
@@ -279,7 +283,7 @@ export function BookingSummaryPage() {
                 >
                   {card.popular && (
                     <div className="absolute top-0 right-0 bg-[#C5A028] text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
-                      Popular
+                      {t.summary.popular}
                     </div>
                   )}
                   {card.badge && !card.popular && (
@@ -310,7 +314,7 @@ export function BookingSummaryPage() {
 
         {/* Payment + Notes */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-          <h2 className="text-xl font-serif font-bold mb-4 border-b pb-2">Payment & notes</h2>
+          <h2 className="text-xl font-serif font-bold mb-4 border-b pb-2">{t.summary.paymentAndNotes}</h2>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <input
@@ -322,18 +326,18 @@ export function BookingSummaryPage() {
                 className="mt-1"
               />
               <Label htmlFor="pay-card-vehicle" className="cursor-pointer flex-1">
-                <span className="font-semibold">Credit card in vehicle</span>
+                <span className="font-semibold">{t.summary.payCardVehicle}</span>
                 <p className="text-sm text-gray-500 mt-1">
-                  Payment in the vehicle immediately after the trip.
+                  {t.summary.payCardVehicleDesc}
                 </p>
               </Label>
             </div>
             <div>
               <Label className="text-xs font-bold uppercase text-gray-500 flex items-center gap-2 mb-2">
-                <FileText className="w-4 h-4" /> Notes for your chauffeur
+                <FileText className="w-4 h-4" /> {t.summary.notesForChauffeur}
               </Label>
               <Textarea
-                placeholder="Child seats, extra luggage, hotel name, gate, etc."
+                placeholder={t.summary.notesPlaceholder}
                 rows={3}
                 className="border-[#d4af37]/30"
                 value={bookingData.customerDetails?.specialRequests ?? ''}
@@ -352,14 +356,14 @@ export function BookingSummaryPage() {
 
         <div className="flex justify-between items-center">
           <Button variant="outline" onClick={() => navigate('/')} className="border-[#d4af37]/30">
-            Back
+            {t.summary.back}
           </Button>
           <Button
             onClick={handleContinue}
             disabled={!selectedVehicleId}
             className="bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white px-8 disabled:opacity-50"
           >
-            Continue to checkout
+            {t.summary.continueToCheckout}
           </Button>
         </div>
       </div>

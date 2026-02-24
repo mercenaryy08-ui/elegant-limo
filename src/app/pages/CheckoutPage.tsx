@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useBooking } from '../contexts/BookingContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslations } from '../lib/translations';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -45,6 +47,8 @@ interface CheckoutFormData {
 
 export function CheckoutPage() {
   const navigate = useNavigate();
+  const language = useLanguage();
+  const t = useTranslations(language);
   const { bookingData, updateBookingData } = useBooking();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -77,12 +81,12 @@ export function CheckoutPage() {
       const el = document.getElementById(first);
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    toast.error('Please fill in all required fields (name, email, phone) and fix any errors below.');
+    toast.error(t.checkout.fillRequiredError);
   };
 
   const onSubmit = async (data: CheckoutFormData) => {
     if (!data.termsAccepted || !data.cancellationAccepted) {
-      toast.error('Please accept the terms and cancellation policy');
+      toast.error(t.checkout.acceptTermsError);
       return;
     }
 
@@ -188,10 +192,10 @@ export function CheckoutPage() {
     <Card className="border-[#d4af37]/30 bg-gradient-to-br from-white to-[#fafafa] shadow-lg sticky top-24">
       <div className="h-1 bg-gradient-to-r from-[#b8941f] via-[#d4af37] to-[#b8941f]" />
       <div className="p-6 space-y-6">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 text-[#d4af37]" />
-          <h3 className="text-xl font-semibold text-[#0a0a0a]">Booking Summary</h3>
-        </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-[#d4af37]" />
+                  <h3 className="text-xl font-semibold text-[#0a0a0a]">{t.checkout.bookingSummary}</h3>
+                </div>
 
         <div className="space-y-4">
           {/* Vehicle */}
@@ -237,7 +241,7 @@ export function CheckoutPage() {
             <div className="flex items-center gap-2 text-sm">
               <Users className="w-4 h-4 text-[#d4af37]" />
               <span className="text-[#0a0a0a]">
-                {bookingData.passengers} {bookingData.passengers === 1 ? 'Passenger' : 'Passengers'}
+                {bookingData.passengers} {bookingData.passengers === 1 ? t.common.passenger : t.common.passengers}
               </span>
             </div>
           </div>
@@ -294,9 +298,9 @@ export function CheckoutPage() {
           <div className="lg:col-span-2 space-y-8">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-[#0a0a0a] mb-2">
-                Complete Your Reservation
+                {t.checkout.title}
               </h2>
-              <p className="text-muted-foreground">Just a few more details to confirm your booking</p>
+              <p className="text-muted-foreground">{t.checkout.justDetails}</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-8">
@@ -305,19 +309,19 @@ export function CheckoutPage() {
                 <div className="p-6 space-y-6">
                   <div className="flex items-center gap-2">
                     <User className="w-5 h-5 text-[#d4af37]" />
-                    <h3 className="text-xl font-semibold text-[#0a0a0a]">Customer Details</h3>
+                    <h3 className="text-xl font-semibold text-[#0a0a0a]">{t.checkout.customerDetails}</h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* First Name */}
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name <span className="text-destructive">*</span></Label>
+                      <Label htmlFor="firstName">{t.checkout.firstName} <span className="text-destructive">*</span></Label>
                       <Input
                         id="firstName"
                         placeholder="John"
                         autoComplete="given-name"
                         {...register('firstName', {
-                          validate: (v) => (v != null && String(v).trim() !== '') || 'First name is required',
+                          validate: (v) => (v != null && String(v).trim() !== '') || t.checkout.firstNameRequired,
                         })}
                         className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
                         aria-invalid={errors.firstName ? 'true' : 'false'}
@@ -331,13 +335,13 @@ export function CheckoutPage() {
 
                     {/* Last Name */}
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name <span className="text-destructive">*</span></Label>
+                      <Label htmlFor="lastName">{t.checkout.lastName} <span className="text-destructive">*</span></Label>
                       <Input
                         id="lastName"
                         placeholder="Doe"
                         autoComplete="family-name"
                         {...register('lastName', {
-                          validate: (v) => (v != null && String(v).trim() !== '') || 'Last name is required',
+                          validate: (v) => (v != null && String(v).trim() !== '') || t.checkout.lastNameRequired,
                         })}
                         className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
                         aria-invalid={errors.lastName ? 'true' : 'false'}
@@ -354,7 +358,7 @@ export function CheckoutPage() {
                   <div className="space-y-2">
                     <Label htmlFor="email" className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-[#d4af37]" />
-                      Email <span className="text-destructive">*</span>
+                      {t.checkout.email} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="email"
@@ -364,8 +368,8 @@ export function CheckoutPage() {
                       {...register('email', {
                         validate: (v) => {
                           const s = v != null ? String(v).trim() : '';
-                          if (s === '') return 'Email is required';
-                          if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(s)) return 'Invalid email address';
+                          if (s === '') return t.checkout.emailRequired;
+                          if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(s)) return t.checkout.emailInvalid;
                           return true;
                         },
                       })}
@@ -383,7 +387,7 @@ export function CheckoutPage() {
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-[#d4af37]" />
-                      Phone Number <span className="text-destructive">*</span>
+                      {t.checkout.phone} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="phone"
@@ -391,7 +395,7 @@ export function CheckoutPage() {
                       placeholder="+41 79 123 4567"
                       autoComplete="tel"
                       {...register('phone', {
-                        validate: (v) => (v != null && String(v).trim() !== '') || 'Phone number is required',
+                        validate: (v) => (v != null && String(v).trim() !== '') || t.checkout.phoneRequired,
                       })}
                       className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
                       aria-invalid={errors.phone ? 'true' : 'false'}
@@ -405,7 +409,7 @@ export function CheckoutPage() {
 
                   {/* Special Requests */}
                   <div className="space-y-2">
-                    <Label htmlFor="specialRequests">Special Requests (Optional)</Label>
+                    <Label htmlFor="specialRequests">{t.checkout.specialRequests} (Optional)</Label>
                     <Textarea
                       id="specialRequests"
                       placeholder="Any special requirements or preferences..."
@@ -420,7 +424,7 @@ export function CheckoutPage() {
               {/* Add-ons (e.g. VIP) */}
               <Card className="border-[#d4af37]/30">
                 <div className="p-6 space-y-4">
-                  <h3 className="text-xl font-semibold text-[#0a0a0a]">Add-ons</h3>
+                  <h3 className="text-xl font-semibold text-[#0a0a0a]">{t.checkout.addOns}</h3>
                   {ADD_ONS.map((addon) => {
                     const checked = selectedAddOns.includes(addon.id);
                     return (
@@ -452,23 +456,23 @@ export function CheckoutPage() {
                 <div className="p-6 space-y-4">
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-[#d4af37]" />
-                    <h3 className="text-xl font-semibold text-[#0a0a0a]">Payment</h3>
+                    <h3 className="text-xl font-semibold text-[#0a0a0a]">{t.checkout.payment}</h3>
                   </div>
 
                   <Alert className="border-[#d4af37]/30 bg-[#f4e4b7]/10">
                     <AlertCircle className="h-4 w-4 text-[#d4af37]" />
                     <AlertDescription className="text-[#0a0a0a]">
                       <div className="space-y-2">
-                        <p className="font-semibold">Pay on website with card (Stripe)</p>
-                        <p className="text-sm">You will be taken to a secure Stripe page to pay by credit or debit card. A receipt will be sent to your email after payment.</p>
+                        <p className="font-semibold">{t.checkout.payStripe}</p>
+                        <p className="text-sm">{t.checkout.payStripeDesc}</p>
                         <ul className="text-sm space-y-1 mt-2">
                           <li className="flex items-start gap-2">
                             <CheckCircle2 className="w-4 h-4 text-[#d4af37] mt-0.5 flex-shrink-0" />
-                            <span>Secure payment powered by Stripe</span>
+                            <span>{t.checkout.secureStripe}</span>
                           </li>
                           <li className="flex items-start gap-2">
                             <CheckCircle2 className="w-4 h-4 text-[#d4af37] mt-0.5 flex-shrink-0" />
-                            <span>Email receipt after payment</span>
+                            <span>{t.checkout.emailReceipt}</span>
                           </li>
                         </ul>
                       </div>
@@ -504,7 +508,7 @@ export function CheckoutPage() {
                       htmlFor="cancellation"
                       className="text-sm text-[#0a0a0a] cursor-pointer leading-relaxed"
                     >
-                      I have read and accept the cancellation policy
+                      {t.checkout.cancellationLabel}
                     </label>
                   </div>
                 </div>
@@ -526,7 +530,7 @@ export function CheckoutPage() {
                       htmlFor="terms"
                       className="text-sm text-[#0a0a0a] cursor-pointer leading-relaxed"
                     >
-                      I agree to the Terms & Conditions and Privacy Policy
+                      {t.checkout.termsAndPrivacy}
                     </label>
                   </div>
                 </div>
@@ -541,11 +545,11 @@ export function CheckoutPage() {
                 {isSubmitting ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Redirecting to payment...
+                    {t.checkout.redirecting}
                   </>
                 ) : (
                   <>
-                    Pay with Stripe
+                    {t.checkout.payWithStripe}
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </>
                 )}
