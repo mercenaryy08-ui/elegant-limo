@@ -75,16 +75,15 @@ export default async function handler(req, res) {
 
   const stripe = new Stripe(secretKey);
 
+  const cancellationNote = 'Cancellation: free ≥24h before pickup; <24h before pickup: 50% cancellation fee applies.';
+  const routeDesc = `${(body.from || '').slice(0, 80)} → ${(body.to || '').slice(0, 80)} • ${body.date || ''} ${body.time || ''}`;
+  const fullDescription = `${routeDesc}. ${cancellationNote}`.slice(0, 500);
+
   try {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       customer_email: (body.customerEmail || '').trim() || undefined,
-      // Cancellation policy for display on Stripe Checkout (refunds applied manually per policy)
-      const cancellationNote = 'Cancellation: free ≥24h before pickup; <24h before pickup: 50% cancellation fee applies.';
-      const routeDesc = `${(body.from || '').slice(0, 80)} → ${(body.to || '').slice(0, 80)} • ${body.date || ''} ${body.time || ''}`;
-      const fullDescription = `${routeDesc}. ${cancellationNote}`.slice(0, 500);
-
       line_items: [
         {
           price_data: {
