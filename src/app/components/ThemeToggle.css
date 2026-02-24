@@ -12,6 +12,22 @@
   border-radius: 9999px;
 }
 
+@media (max-width: 640px) {
+  .toggle-cont {
+    height: 42px;
+  }
+  .toggle-cont .toggle-label {
+    --width: 38px;
+    padding: 0.35rem;
+  }
+  .toggle-cont .toggle-label .cont-icon {
+    height: 42px;
+  }
+  .cont-icon .icon {
+    width: 0.95rem;
+  }
+}
+
 .toggle-cont .toggle-input {
   display: none;
 }

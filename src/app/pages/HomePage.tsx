@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 import { setOpsAuthenticated } from '../lib/ops-auth';
-import { ThemeToggle } from '../components/ThemeToggle';
+import { useLanguage } from '../contexts/LanguageContext';
 import { toast } from 'sonner';
 import { fetchOsrmRoute } from '../lib/route-utils';
 import { geocodeAddress } from '../lib/nominatim';
@@ -42,7 +42,8 @@ interface BookingFormData {
 export function HomePage() {
   const navigate = useNavigate();
   const { bookingData, updateBookingData } = useBooking();
-  const t = useTranslations('en');
+  const { language } = useLanguage();
+  const t = useTranslations(language);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -282,14 +283,19 @@ export function HomePage() {
       <header className="border-b border-[#d4af37]/20 bg-white/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 md:py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleElegantLimoClick}
+              className="flex items-center gap-3 bg-transparent border-none cursor-pointer p-0 text-left"
+              aria-label="Elegant Limo"
+            >
               <div className="w-10 h-10 bg-gradient-to-br from-[#d4af37] to-[#b8941f] rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">E</span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-[#0a0a0a]">
+              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-[#0a0a0a] dark:text-foreground">
                 {t.home.hero.title}
               </h1>
-            </div>
+            </button>
           </div>
         </div>
       </header>
@@ -506,26 +512,6 @@ export function HomePage() {
             </div>
           </div>
 
-          <footer className="mt-16 pt-8 border-t border-[#d4af37]/10 text-center text-sm text-muted-foreground">
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex items-center justify-center gap-4 flex-wrap">
-                <button
-                  type="button"
-                  onClick={handleElegantLimoClick}
-                  className="text-[#0a0a0a] dark:text-foreground font-medium hover:text-[#d4af37] transition-colors cursor-pointer bg-transparent border-none"
-                  aria-label="Elegant Limo"
-                >
-                  Elegant Limo
-                </button>
-                <span className="text-muted-foreground">·</span>
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <span>Light</span>
-                  <ThemeToggle />
-                  <span>Dark</span>
-                </span>
-              </div>
-            </div>
-          </footer>
         </div>
       </section>
 

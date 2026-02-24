@@ -1,7 +1,7 @@
 // Multilingual support structure (EN/AL)
 // This structure allows easy extension for additional languages
 
-export type Language = 'en' | 'al';
+export type Language = 'en' | 'al' | 'de';
 
 export interface Translations {
   nav: {
@@ -216,12 +216,83 @@ const al: Translations = {
   },
 };
 
+const de: Translations = {
+  nav: {
+    home: 'Start',
+    about: 'Über uns',
+    contact: 'Kontakt',
+  },
+  home: {
+    hero: {
+      title: 'Elegant Limo',
+      subtitle: 'Premium Limousinenservice für anspruchsvolle Reisende',
+    },
+    form: {
+      from: 'Abholort',
+      to: 'Zielort',
+      date: 'Datum',
+      time: 'Uhrzeit',
+      passengers: 'Passagiere',
+      continue: 'Weiter',
+      pickupPlaceholder: 'Abholadresse eingeben',
+      dropoffPlaceholder: 'Zieladresse eingeben',
+    },
+    validation: {
+      requiredField: 'Dieses Feld ist erforderlich',
+      invalidDate: 'Ungültiges Datum',
+      pastDate: 'Datum darf nicht in der Vergangenheit liegen',
+    },
+  },
+  pricing: {
+    title: 'Ihre Fahrtdetails',
+    routeSummary: 'Streckenübersicht',
+    basePrice: 'Grundpreis',
+    addOns: 'Premium Extras',
+    total: 'Gesamt',
+    bookNow: 'Jetzt buchen',
+    addOn: {
+      champagne: 'Champagner-Service',
+      champagneDesc: 'Dom Pérignon Champagner-Service',
+      airportMeet: 'Flughafen Meet & Greet',
+      airportMeetDesc: 'Persönliche Begrüssung am Flughafen',
+      childSeat: 'Kindersitz',
+      childSeatDesc: 'Premium Kindersitz',
+      redCarpet: 'Roter Teppich',
+      redCarpetDesc: 'Service mit rotem Teppich',
+    },
+  },
+  checkout: {
+    title: 'Reservation abschliessen',
+    customerDetails: 'Kundendaten',
+    firstName: 'Vorname',
+    lastName: 'Nachname',
+    email: 'E-Mail',
+    phone: 'Telefonnummer',
+    specialRequests: 'Besondere Wünsche',
+    paymentMethod: 'Zahlungsart',
+    cardNumber: 'Kartennummer',
+    expiryDate: 'Ablaufdatum',
+    cvv: 'CVV',
+    termsLabel: 'Ich akzeptiere die AGB',
+    privacyLabel: 'Ich akzeptiere die Datenschutzrichtlinie',
+    confirmBooking: 'Reservation bestätigen',
+    bookingSummary: 'Buchungsübersicht',
+    successMessage: 'Ihre Buchung wurde bestätigt!',
+    bookingReference: 'Buchungsnummer',
+  },
+  common: {
+    loading: 'Wird geladen...',
+    error: 'Ein Fehler ist aufgetreten',
+    success: 'Erfolg!',
+  },
+};
+
 export const translations: Record<Language, Translations> = {
   en,
   al,
+  de,
 };
 
-// Hook for using translations (can be extended with language switching)
 export function useTranslations(lang: Language = 'en'): Translations {
   return translations[lang];
 }
