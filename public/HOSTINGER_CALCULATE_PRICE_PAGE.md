@@ -2,7 +2,7 @@
 
 The **hero section** now sends users to **elegant-limo.vercel.app** (From/To/Date pre-filled). The full flow (summary with map + 3 cars + Recalculate, then checkout) lives on Vercel.
 
-The old Hostinger page you had after "Book now" (instant estimate, map, 3 cars, FormSubmit to info@sdit-services.com) is **no longer in the main flow**. You have three options:
+The old Hostinger page you had after "Book now" (instant estimate, map, 3 cars) is **no longer in the main flow**. You have three options:
 
 ---
 
@@ -28,7 +28,7 @@ Use this if you have old links or ads pointing to the calculate-price page.
 ## Option 3: Keep the old page as a second path
 
 - **Do:** Nothing; leave the current HTML as is.
-- **Downside:** Two different booking paths (Vercel flow vs FormSubmit form). Duplicate handling and the FormSubmit flow doesn’t use your Vercel notifications (email to customer, aid@sdit-services.com, WhatsApp, etc.). Not recommended unless you have a specific reason.
+- **Downside:** Two different booking paths (Vercel flow vs external form). Duplicate handling and the external form doesn’t use your Brevo notifications (email to customer, admin, WhatsApp, etc.). Not recommended unless you have a specific reason.
 
 ---
 

@@ -41,10 +41,7 @@ import { addBooking } from '../lib/bookings-store';
 const WHATSAPP_NUMBER = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_WHATSAPP_NUMBER || '38348263151';
 import { formatCHF, ADD_ONS } from '../lib/pricing';
 import { PAYMENT_POLICY, CANCELLATION_POLICY, generateInvoiceLineItems } from '../lib/policies';
-import {
-  sendAdminBookingAlert,
-  sendCustomerConfirmationEmail,
-} from '../lib/notifications';
+import { sendBookingEmails } from '../lib/notifications';
 
 interface CheckoutFormData {
   firstName: string;
@@ -150,12 +147,9 @@ export function CheckoutPage() {
         updatedAt: new Date().toISOString(),
       });
 
-      // Send emails via FormSubmit AJAX (no redirect, no new tab)
+      // Send emails via Brevo (admin alert + customer confirmation)
       try {
-        await Promise.all([
-          sendAdminBookingAlert(bookingPayload),
-          sendCustomerConfirmationEmail(bookingPayload),
-        ]);
+        await sendBookingEmails(bookingPayload);
       } catch (e) {
         console.warn('Email notification failed:', e);
       }
