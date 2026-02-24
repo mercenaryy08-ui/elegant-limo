@@ -13,14 +13,17 @@ import { OpsWorkingHoursPage } from './pages/ops/OpsWorkingHoursPage';
 import { OpsCalendarPage } from './pages/ops/OpsCalendarPage';
 import { Toaster } from './components/ui/sonner';
 import { BookingProvider } from './contexts/BookingContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 
 export default function App() {
   return (
-    <BookingProvider>
-      <Router>
-        <div className="min-h-screen bg-background">
-          <Toaster />
-          <Routes>
+    <ThemeProvider>
+      <BookingProvider>
+        <Router>
+          <div className="min-h-screen bg-background">
+            <Toaster />
+            <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/summary" element={<BookingSummaryPage />} />
             <Route path="/select-vehicle" element={<Navigate to="/summary" replace />} />
@@ -35,9 +38,11 @@ export default function App() {
                 <Route path="calendar" element={<OpsCalendarPage />} />
               </Route>
             </Route>
-          </Routes>
-        </div>
-      </Router>
-    </BookingProvider>
+            </Routes>
+            <FloatingWhatsApp />
+          </div>
+        </Router>
+      </BookingProvider>
+    </ThemeProvider>
   );
 }

@@ -7,6 +7,15 @@
     <title>Elegant Limo – Premium Limousine Service</title>
   </head>
   <body>
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('elegant_limo_theme');
+          if (t === 'dark') document.documentElement.classList.add('dark');
+          else document.documentElement.classList.remove('dark');
+        } catch (e) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

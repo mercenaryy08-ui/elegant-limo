@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 import { setOpsAuthenticated } from '../lib/ops-auth';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { toast } from 'sonner';
 import { fetchOsrmRoute } from '../lib/route-utils';
 import { geocodeAddress } from '../lib/nominatim';
@@ -506,14 +507,24 @@ export function HomePage() {
           </div>
 
           <footer className="mt-16 pt-8 border-t border-[#d4af37]/10 text-center text-sm text-muted-foreground">
-            <button
-              type="button"
-              onClick={handleElegantLimoClick}
-              className="text-[#0a0a0a] font-medium hover:text-[#d4af37] transition-colors cursor-pointer bg-transparent border-none"
-              aria-label="Elegant Limo"
-            >
-              Elegant Limo
-            </button>
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center justify-center gap-4 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleElegantLimoClick}
+                  className="text-[#0a0a0a] dark:text-foreground font-medium hover:text-[#d4af37] transition-colors cursor-pointer bg-transparent border-none"
+                  aria-label="Elegant Limo"
+                >
+                  Elegant Limo
+                </button>
+                <span className="text-muted-foreground">·</span>
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  <span>Light</span>
+                  <ThemeToggle />
+                  <span>Dark</span>
+                </span>
+              </div>
+            </div>
           </footer>
         </div>
       </section>
