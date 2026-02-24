@@ -61,6 +61,13 @@ A modern, luxury limousine booking website with a seamless 60-second booking flo
    ```bash
    npm run dev
    ```
+   For **booking confirmation emails** to work locally, use:
+   ```bash
+   npm run dev:all
+   ```
+   This starts both the app and the email API. Add a `.env` with `BREVO_API_KEY` (get the full key from [Brevo → API Keys](https://app.brevo.com/settings/keys/api); it usually starts with `xkeysib-`). The sender email in `.env` must be [verified in Brevo](https://app.brevo.com/senders/list).
+
+   **Payment (Stripe):** The site uses Stripe as the only payment method. Create a [Stripe account](https://dashboard.stripe.com/register), get your **Secret key** (Developers → API keys), and set `STRIPE_SECRET_KEY` in `.env` (local) and in the Vercel project Environment Variables (production). Stripe Checkout and receipt emails work when deployed to Vercel; for local testing use `vercel dev` so the Stripe API routes are available.
 
 4. **Open in browser**
    ```

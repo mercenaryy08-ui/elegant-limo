@@ -4,6 +4,7 @@ import { VehicleSelectionPage } from './pages/VehicleSelectionPage';
 import { CalculatePricePage } from './pages/CalculatePricePage';
 import { BookingSummaryPage } from './pages/BookingSummaryPage';
 import { CheckoutPage } from './pages/CheckoutPage';
+import { BookingSuccessPage } from './pages/BookingSuccessPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { OpsGate } from './pages/ops/OpsGate';
 import { OpsLayout } from './pages/ops/OpsLayout';
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="/select-vehicle" element={<Navigate to="/summary" replace />} />
             <Route path="/calculate-price" element={<Navigate to="/summary" replace />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/booking-success" element={<BookingSuccessPage />} />
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/ops" element={<OpsGate />}>
               <Route element={<OpsLayout />}>

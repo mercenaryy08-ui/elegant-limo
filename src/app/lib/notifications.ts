@@ -35,11 +35,16 @@ function vehicleLabel(vehicleId: string): string {
 
 const getApiBase = () => (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_API_BASE_URL ?? '';
 
+export interface SendBookingEmailsResult {
+  ok: boolean;
+  error?: string;
+}
+
 /**
  * Send booking emails via Brevo (admin alert + customer confirmation).
- * Calls the serverless API which uses BREVO_API_KEY. Requires deployment with API route (e.g. Vercel).
+ * Calls the serverless API which uses BREVO_API_KEY. For local dev, run "npm run dev:email" and use "npm run dev:all" (or Vite proxies /api to the email server).
  */
-export async function sendBookingEmails(booking: BookingFormSubmitPayload): Promise<void> {
+export async function sendBookingEmails(booking: BookingFormSubmitPayload): Promise<SendBookingEmailsResult> {
   const apiBase = getApiBase().replace(/\/$/, '');
   const url = `${apiBase}/api/send-booking-emails`;
   const vehicleLabelStr = vehicleLabel(booking.vehicleId);
@@ -60,11 +65,21 @@ export async function sendBookingEmails(booking: BookingFormSubmitPayload): Prom
     });
     if (!res.ok) {
       const errBody = await res.text();
+      let errMsg = `Emails failed (${res.status})`;
+      try {
+        const j = JSON.parse(errBody);
+        if (j?.error) errMsg = j.error;
+      } catch {
+        if (errBody) errMsg = errBody.slice(0, 120);
+      }
       console.warn('Brevo booking emails response:', res.status, errBody);
-      return;
+      return { ok: false, error: errMsg };
     }
+    return { ok: true };
   } catch (err) {
+    const message = err instanceof Error ? err.message : 'Request failed';
     console.warn('Brevo booking emails request failed:', err);
+    return { ok: false, error: message };
   }
 }
 

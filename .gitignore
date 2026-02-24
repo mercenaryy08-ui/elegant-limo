@@ -10,6 +10,7 @@ build/
 .env
 .env.local
 .env.*.local
+VERCEL_ENV_SETUP.md
 
 # IDE / OS
 .idea/

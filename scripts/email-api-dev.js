@@ -1,17 +1,44 @@
 /**
- * Vercel serverless function: send booking confirmation + admin alert via Brevo.
- * POST body: booking payload (see notifications.ts BookingFormSubmitPayload).
- * Env: BREVO_API_KEY, BREVO_SENDER_EMAIL (optional), BREVO_SENDER_NAME (optional), ADMIN_EMAIL (optional).
+ * Local dev server for POST /api/send-booking-emails (same logic as Vercel serverless).
+ * Run: node scripts/email-api-dev.js
+ * Loads .env from project root. Vite proxy forwards /api to this server (port 3001).
  */
+
+import { createServer } from 'http';
+import { readFileSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = resolve(__dirname, '..');
+
+// Load .env manually (no dotenv dep)
+try {
+  const envPath = resolve(root, '.env');
+  const env = readFileSync(envPath, 'utf8');
+  env.split('\n').forEach((line) => {
+    const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '').trim();
+  });
+} catch {
+  console.warn('No .env found; set BREVO_API_KEY in .env for emails to work.');
+}
 
 const BREVO_URL = 'https://api.brevo.com/v3/smtp/email';
 const DEFAULT_SENDER_EMAIL = 'info@sdit-services.com';
 const DEFAULT_SENDER_NAME = 'Elegant Limo Switzerland';
 const DEFAULT_ADMIN_EMAIL = 'info@sdit-services.com';
+const PORT = 3001;
 
 function getEnv(name, fallback) {
   const v = process.env[name];
-  return (v && v.trim()) ? v.trim() : fallback;
+  return (v && String(v).trim()) ? String(v).trim() : fallback;
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  const str = String(s);
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function buildAdminHtml(p) {
@@ -34,7 +61,6 @@ function buildAdminHtml(p) {
   return `<!DOCTYPE html><html><body style="font-family:sans-serif;"><h2>New booking: ${escapeHtml(p.bookingReference)}</h2><table style="border-collapse:collapse;">${tr}</table></body></html>`;
 }
 
-/** Build one-click Google Calendar add-event URL */
 function buildGoogleCalendarUrl(p) {
   const date = p.date || '';
   const time = (p.time || '09:00').replace(/\s/g, '');
@@ -86,25 +112,10 @@ Elegant Limo Switzerland
   return `<!DOCTYPE html><html><body style="font-family:sans-serif;">${body.replace(/\n/g, '<br/>')}</body></html>`;
 }
 
-function escapeHtml(s) {
-  if (s == null) return '';
-  const str = String(s);
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
 async function sendBrevo(apiKey, { sender, to, subject, htmlContent, replyTo }) {
   const res = await fetch(BREVO_URL, {
     method: 'POST',
-    headers: {
-      'accept': 'application/json',
-      'content-type': 'application/json',
-      'api-key': apiKey,
-    },
+    headers: { accept: 'application/json', 'content-type': 'application/json', 'api-key': apiKey },
     body: JSON.stringify({
       sender: { name: sender.name, email: sender.email },
       to: [{ email: to.email, name: to.name || to.email }],
@@ -120,61 +131,84 @@ async function sendBrevo(apiKey, { sender, to, subject, htmlContent, replyTo }) 
   return res.json();
 }
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
-  }
-
+async function handleSendBookingEmails(body) {
   const apiKey = getEnv('BREVO_API_KEY', '');
-  if (!apiKey) {
-    res.status(500).json({ error: 'BREVO_API_KEY not configured' });
-    return;
-  }
-
-  let body;
-  try {
-    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
-  } catch {
-    res.status(400).json({ error: 'Invalid JSON body' });
-    return;
-  }
+  if (!apiKey) throw new Error('BREVO_API_KEY not set in .env');
 
   const senderEmail = getEnv('BREVO_SENDER_EMAIL', DEFAULT_SENDER_EMAIL);
   const senderName = getEnv('BREVO_SENDER_NAME', DEFAULT_SENDER_NAME);
   const adminEmail = getEnv('ADMIN_EMAIL', DEFAULT_ADMIN_EMAIL);
   const whatsappNumber = getEnv('WHATSAPP_NUMBER', '38348263151').replace(/\D/g, '');
   const sender = { name: senderName, email: senderEmail };
-
   const customerEmail = (body.customerEmail || '').trim();
-  const results = { admin: null, customer: null };
 
-  try {
-    // 1) Admin alert
+  await sendBrevo(apiKey, {
+    sender,
+    to: { email: adminEmail, name: 'Admin' },
+    subject: `[Elegant Limo] New booking ${body.bookingReference || ''}`,
+    htmlContent: buildAdminHtml(body),
+    replyTo: senderEmail,
+  });
+
+  if (customerEmail) {
     await sendBrevo(apiKey, {
       sender,
-      to: { email: adminEmail, name: 'Admin' },
-      subject: `[Elegant Limo] New booking ${body.bookingReference || ''}`,
-      htmlContent: buildAdminHtml(body),
+      to: { email: customerEmail, name: body.customerName || '' },
+      subject: `Elegant Limo — Booking Confirmation ${body.bookingReference || ''}`,
+      htmlContent: buildCustomerHtml(body, whatsappNumber),
       replyTo: senderEmail,
     });
-    results.admin = 'sent';
-
-    // 2) Customer confirmation
-    if (customerEmail) {
-      await sendBrevo(apiKey, {
-        sender,
-        to: { email: customerEmail, name: body.customerName || '' },
-        subject: `Elegant Limo — Booking Confirmation ${body.bookingReference || ''}`,
-        htmlContent: buildCustomerHtml(body, whatsappNumber),
-        replyTo: senderEmail,
-      });
-      results.customer = 'sent';
-    }
-
-    res.status(200).json({ ok: true, ...results });
-  } catch (err) {
-    console.error('send-booking-emails error:', err);
-    res.status(500).json({ error: err.message || 'Failed to send emails' });
   }
+
+  return { ok: true, admin: 'sent', customer: customerEmail ? 'sent' : null };
 }
+
+const server = createServer((req, res) => {
+  const allowCors = () => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  };
+
+  if (req.method === 'OPTIONS') {
+    allowCors();
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  if (req.method !== 'POST' || req.url !== '/api/send-booking-emails') {
+    allowCors();
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
+
+  let raw = '';
+  req.on('data', (ch) => { raw += ch; });
+  req.on('end', async () => {
+    allowCors();
+    let body;
+    try {
+      body = JSON.parse(raw || '{}');
+    } catch {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid JSON' }));
+      return;
+    }
+    try {
+      const result = await handleSendBookingEmails(body);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    } catch (err) {
+      console.error('Email API error:', err.message);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message || 'Failed to send emails' }));
+    }
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(`Email API dev server: http://localhost:${PORT}/api/send-booking-emails`);
+  if (!getEnv('BREVO_API_KEY', '')) console.warn('BREVO_API_KEY not set in .env — emails will fail.');
+});

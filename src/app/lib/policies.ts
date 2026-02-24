@@ -116,14 +116,13 @@ export function calculateFlightDelaySurcharge(
  * Payment policy text
  */
 export const PAYMENT_POLICY = {
-  method: 'Card on Vehicle',
-  description: 'Payment by card directly to the driver',
+  method: 'Pay on website (Stripe)',
+  description: 'Payment by card on our website via Stripe. Receipt sent by email.',
   details: [
-    'Cash payments are not accepted',
-    'Pay by credit or debit card to your driver at the end of the trip',
-    'All major cards accepted (Visa, Mastercard, American Express)',
-    'Payment is processed securely through our mobile terminal',
-    'You will receive a receipt immediately after payment',
+    'Pay securely by credit or debit card on the checkout page',
+    'Powered by Stripe – all major cards accepted (Visa, Mastercard, American Express)',
+    'Email receipt sent after payment',
+    'No payment on the vehicle – full payment online',
   ],
   noCash: true,
   noUpfrontPayment: true,
