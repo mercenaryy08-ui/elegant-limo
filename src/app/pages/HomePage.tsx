@@ -391,38 +391,31 @@ export function HomePage() {
 
                 {/* Date and Time Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Date Picker */}
+                  {/* Date Picker (native input for reliability) */}
                   <div className="space-y-2">
-                    <Label className="flex items-center gap-2 text-[#0a0a0a]">
+                    <Label htmlFor="date" className="flex items-center gap-2 text-[#0a0a0a]">
                       <CalendarIcon className="w-4 h-4 text-[#d4af37]" />
                       {t.home.form.date}
                     </Label>
-                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="w-full h-14 justify-start text-left font-normal border-[#d4af37]/30 hover:border-[#d4af37] hover:bg-[#fafafa] bg-[#fafafa]"
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4 text-[#d4af37]" />
-                          {selectedDate ? (
-                            format(selectedDate, 'PPP')
-                          ) : (
-                            <span className="text-muted-foreground">Pick a date</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
-                        <Calendar
-                          mode="single"
-                          selected={selectedDate}
-                          onSelect={(date) => {
-                            setSelectedDate(date);
-                            if (date) setCalendarOpen(false);
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <Input
+                      id="date"
+                      type="date"
+                      value={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (!v) {
+                          setSelectedDate(undefined);
+                          return;
+                        }
+                        const d = new Date(v);
+                        if (!isNaN(d.getTime())) {
+                          setSelectedDate(d);
+                        } else {
+                          setSelectedDate(undefined);
+                        }
+                      }}
+                      className="h-14 text-base border-[#d4af37]/30 focus:border-[#d4af37] focus:ring-[#d4af37] bg-[#fafafa]"
+                    />
                   </div>
 
                   {/* Time Picker */}
