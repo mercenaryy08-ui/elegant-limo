@@ -5,9 +5,9 @@
  */
 
 const BREVO_URL = 'https://api.brevo.com/v3/smtp/email';
-const DEFAULT_SENDER_EMAIL = 'info@sdit-services.com';
+const DEFAULT_SENDER_EMAIL = 'noreply@elegant-limo.ch';
 const DEFAULT_SENDER_NAME = 'Elegant Limo Switzerland';
-const DEFAULT_ADMIN_EMAIL = 'info@sdit-services.com';
+const DEFAULT_ADMIN_EMAIL = 'booking@elegant-limo.ch';
 
 function getEnv(name, fallback) {
   const v = process.env[name];
@@ -156,7 +156,7 @@ export default async function handler(req, res) {
       to: { email: adminEmail, name: 'Admin' },
       subject: `[Elegant Limo] New booking ${body.bookingReference || ''}`,
       htmlContent: buildAdminHtml(body),
-      replyTo: senderEmail,
+      replyTo: adminEmail,
     });
     results.admin = 'sent';
 
@@ -167,7 +167,7 @@ export default async function handler(req, res) {
         to: { email: customerEmail, name: body.customerName || '' },
         subject: `Elegant Limo — Booking Confirmation ${body.bookingReference || ''}`,
         htmlContent: buildCustomerHtml(body, whatsappNumber),
-        replyTo: senderEmail,
+        replyTo: adminEmail,
       });
       results.customer = 'sent';
     }

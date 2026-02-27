@@ -261,7 +261,7 @@ Send booking confirmation email
 ```
 
 #### POST /notifications/new-booking-alert
-Send “new booking alert” email to ops (e.g. aid@sdit-services.com). Body: `{ "to": "aid@sdit-services.com", "booking": { ... } }`.
+Send “new booking alert” email to ops (e.g. booking@elegant-limo.ch). Body: `{ "to": "booking@elegant-limo.ch", "booking": { ... } }`.
 
 #### POST /notifications/whatsapp-alert
 Send WhatsApp alert to ops/admin number immediately after booking. Body: `{ "message": "string", "bookingId": "string" }`.
@@ -300,7 +300,7 @@ All error responses follow this structure:
 ## Exact APIs for Maps-First Booking & Ops
 
 ### POST /api/v1/bookings
-**Create booking** (after checkout). Returns booking `id` and `bookingReference`. Triggers: customer confirmation email, new-booking alert to aid@sdit-services.com, WhatsApp alert to ops.
+**Create booking** (after checkout). Returns booking `id` and `bookingReference`. Triggers: customer confirmation email, new-booking alert to booking@elegant-limo.ch, WhatsApp alert to ops.
 
 ### POST /api/v1/calculate-route-price (recalc)
 **Recalculate route, price and available cars.**

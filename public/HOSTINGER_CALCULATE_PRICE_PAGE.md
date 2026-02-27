@@ -9,7 +9,7 @@ The old Hostinger page you had after "Book now" (instant estimate, map, 3 cars) 
 ## Option 1: Remove it (recommended)
 
 - **Do:** Delete or unpublish the calculate-price page on Hostinger.
-- **Result:** Everyone books only via Vercel. One flow, one place for notifications (customer email, aid@sdit-services.com, WhatsApp, etc.).
+- **Result:** Everyone books only via Vercel. One flow, one place for notifications (customer email, booking@elegant-limo.ch, WhatsApp, etc.).
 
 Use this if you don’t need the old URL for links/emails.
 

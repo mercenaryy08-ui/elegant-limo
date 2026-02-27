@@ -2,8 +2,8 @@
  * Notification emails for booking lifecycle.
  * Uses Brevo via serverless API (api/send-booking-emails) when a booking is confirmed.
  *
- * 1) Admin alert  → info@sdit-services.com  (new booking details)
- * 2) Customer confirmation → customer email  (booking summary)
+ * 1) Admin alert  → booking@elegant-limo.ch  (new booking details)
+ * 2) Customer confirmation → customer email  (booking summary, sent from noreply@elegant-limo.ch with reply-to booking@elegant-limo.ch)
  */
 
 import { CANCELLATION_POLICY, PAYMENT_POLICY } from './policies';

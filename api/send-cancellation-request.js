@@ -5,9 +5,9 @@
  */
 
 const BREVO_URL = 'https://api.brevo.com/v3/smtp/email';
-const DEFAULT_SENDER_EMAIL = 'info@sdit-services.com';
+const DEFAULT_SENDER_EMAIL = 'noreply@elegant-limo.ch';
 const DEFAULT_SENDER_NAME = 'Elegant Limo Switzerland';
-const DEFAULT_ADMIN_EMAIL = 'info@sdit-services.com';
+const DEFAULT_ADMIN_EMAIL = 'booking@elegant-limo.ch';
 
 function getEnv(name, fallback) {
   const v = process.env[name];
