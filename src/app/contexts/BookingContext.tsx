@@ -27,6 +27,7 @@ export interface BookingData {
     phone: string;
     specialRequests?: string;
   };
+  flightNumber?: string;
   paymentMethod?: string; // e.g. "Credit card in vehicle"
   paymentDetails?: {
     cardNumber: string;

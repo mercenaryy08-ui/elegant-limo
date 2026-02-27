@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Clock, Users, Car, CreditCard, FileText } from 'lucide-react';
+import { MapPin, Clock, Users, Car } from 'lucide-react';
 import { format } from 'date-fns';
 import { useBooking } from '../contexts/BookingContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTranslations } from '../lib/translations';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import { Textarea } from '../components/ui/textarea';
+import { Input } from '../components/ui/input';
 import { AddressAutocomplete } from '../components/AddressAutocomplete';
 import { BookingMap } from '../components/BookingMap';
 import { getAvailableVehicles, getVehicleById } from '../lib/fleet';
@@ -21,7 +21,7 @@ const VEHICLE_CARDS = [
     id: 'vehicle-standard-eclass',
     badge: 'Max 3 Pax',
     popular: false,
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Mercedes-Benz_W214_IMG_6325.jpg/1280px-Mercedes-Benz_W214_IMG_6325.jpg',
+    imageUrl: '/images/fleet/mercedes-eqs.jpg',
     title: 'Mercedes E-Class',
     subtitle: 'Business Class',
     features: ['Leather interior', 'Free Wi-Fi & water', '2 suitcases'],
@@ -30,7 +30,7 @@ const VEHICLE_CARDS = [
     id: 'vehicle-premium-sclass',
     badge: null,
     popular: true,
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/2022_Mercedes-Benz_S_500_4MATIC_%28V223%29%2C_front_12.30.22.jpg/1280px-2022_Mercedes-Benz_S_500_4MATIC_%28V223%29%2C_front_12.30.22.jpg',
+    imageUrl: '/images/fleet/mercedes-eclass.jpg',
     title: 'Mercedes S-Class',
     subtitle: 'First Class',
     features: ['Executive comfort', 'Extra legroom', '3 suitcases'],
@@ -39,7 +39,7 @@ const VEHICLE_CARDS = [
     id: 'vehicle-van-vclass',
     badge: 'Max 7 Pax',
     popular: false,
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Mercedes-Benz_V_220d_Avantgarde_extralang_%28W_447%2C_Facelift%29_%E2%80%93_f_30082019.jpg/1280px-Mercedes-Benz_V_220d_Avantgarde_extralang_%28W_447%2C_Facelift%29_%E2%80%93_f_30082019.jpg',
+    imageUrl: '/images/fleet/mercedes-vclass.jpg',
     title: 'Mercedes V-Class',
     subtitle: 'Business Van',
     features: ['Ideal for families & groups', 'Conference seating', '7 suitcases'],
@@ -312,45 +312,25 @@ export function BookingSummaryPage() {
           </div>
         </section>
 
-        {/* Payment + Notes */}
+        {/* Flight number (optional) */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-          <h2 className="text-xl font-serif font-bold mb-4 border-b pb-2">{t.summary.paymentAndNotes}</h2>
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <input
-                type="radio"
-                id="pay-card-vehicle"
-                name="payment"
-                checked={(bookingData.paymentMethod ?? 'Credit card in vehicle') === 'Credit card in vehicle'}
-                onChange={() => updateBookingData({ paymentMethod: 'Credit card in vehicle' })}
-                className="mt-1"
-              />
-              <Label htmlFor="pay-card-vehicle" className="cursor-pointer flex-1">
-                <span className="font-semibold">{t.summary.payCardVehicle}</span>
-                <p className="text-sm text-gray-500 mt-1">
-                  {t.summary.payCardVehicleDesc}
-                </p>
-              </Label>
-            </div>
-            <div>
-              <Label className="text-xs font-bold uppercase text-gray-500 flex items-center gap-2 mb-2">
-                <FileText className="w-4 h-4" /> {t.summary.notesForChauffeur}
-              </Label>
-              <Textarea
-                placeholder={t.summary.notesPlaceholder}
-                rows={3}
-                className="border-[#d4af37]/30"
-                value={bookingData.customerDetails?.specialRequests ?? ''}
-                onChange={(e) =>
-                  updateBookingData({
-                    customerDetails: {
-                      ...(bookingData.customerDetails ?? { firstName: '', lastName: '', email: '', phone: '' }),
-                      specialRequests: e.target.value,
-                    },
-                  })
-                }
-              />
-            </div>
+          <h2 className="text-xl font-serif font-bold mb-4 border-b pb-2">
+            Flight details (optional)
+          </h2>
+          <div className="space-y-2 max-w-md">
+            <Label htmlFor="flightNumber" className="text-sm text-gray-700">
+              Flight number (if you arrive by plane)
+            </Label>
+            <Input
+              id="flightNumber"
+              placeholder="e.g. LX123, BA718"
+              value={bookingData.flightNumber ?? ''}
+              onChange={(e) => updateBookingData({ flightNumber: e.target.value })}
+              className="h-11 border-[#d4af37]/30 focus:border-[#d4af37] focus:ring-[#d4af37] bg-[#fafafa]"
+            />
+            <p className="text-xs text-slate-500">
+              This helps your chauffeur track your arrival. Leave empty if you are not flying.
+            </p>
           </div>
         </section>
 

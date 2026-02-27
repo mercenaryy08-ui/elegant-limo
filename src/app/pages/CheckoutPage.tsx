@@ -123,6 +123,7 @@ export function CheckoutPage() {
         customerName: [data.firstName, data.lastName].filter(Boolean).join(' ') || '',
         customerFirstName: data.firstName?.trim() || '',
         customerLastName: data.lastName?.trim() || '',
+        flightNumber: bookingData.flightNumber ?? '',
         paymentMethod: 'Stripe',
         successUrl,
         cancelUrl,
