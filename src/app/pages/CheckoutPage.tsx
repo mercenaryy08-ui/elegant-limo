@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import ReCAPTCHA from 'react-google-recaptcha';
 import {
   CheckCircle2,
   CreditCard,
@@ -36,6 +37,7 @@ import { formatCHF, ADD_ONS, calculatePrice } from '../lib/pricing';
 import { generateInvoiceLineItems } from '../lib/policies';
 
 const getApiBase = () => (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_API_BASE_URL ?? '';
+const getRecaptchaSiteKey = () => (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_RECAPTCHA_SITE_KEY ?? '';
 
 interface CheckoutFormData {
   firstName: string;
@@ -54,6 +56,9 @@ export function CheckoutPage() {
   const { bookingData, updateBookingData } = useBooking();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA | null>(null);
+  const recaptchaSiteKey = getRecaptchaSiteKey();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -93,6 +98,10 @@ export function CheckoutPage() {
   const onSubmit = async (data: CheckoutFormData) => {
     if (!data.termsAccepted || !data.cancellationAccepted) {
       toast.error(t.checkout.acceptTermsError);
+      return;
+    }
+    if (recaptchaSiteKey && !recaptchaToken) {
+      toast.error(t.checkout.recaptchaError);
       return;
     }
 
@@ -151,6 +160,7 @@ export function CheckoutPage() {
         paymentMethod: 'Stripe',
         successUrl,
         cancelUrl,
+        ...(recaptchaToken ? { recaptchaToken } : {}),
       };
 
       const res = await fetch(`${apiBase}/api/create-stripe-checkout-session`, {
@@ -161,6 +171,8 @@ export function CheckoutPage() {
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        recaptchaRef.current?.reset();
+        setRecaptchaToken(null);
         toast.error(json.error || 'Could not start payment. Please try again.');
         return;
       }
@@ -171,6 +183,8 @@ export function CheckoutPage() {
       toast.error('Payment link not available. Please try again.');
     } catch (err) {
       console.error('Checkout error:', err);
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
       toast.error('Something went wrong. Please try again or contact us.');
     } finally {
       setIsSubmitting(false);
@@ -565,6 +579,19 @@ export function CheckoutPage() {
                   </div>
                 </div>
               </Card>
+
+              {/* reCAPTCHA v2 – before payment */}
+              {recaptchaSiteKey && (
+                <div className="flex flex-col items-start gap-2">
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={recaptchaSiteKey}
+                    onChange={(token) => setRecaptchaToken(token)}
+                    onExpired={() => setRecaptchaToken(null)}
+                    theme="light"
+                  />
+                </div>
+              )}
 
               {/* Submit Button */}
               <Button

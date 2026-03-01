@@ -127,6 +127,7 @@ export interface Translations {
     bookingReference: string;
     redirecting: string;
     acceptTermsError: string;
+    recaptchaError: string;
     fillRequiredError: string;
     firstNameRequired: string;
     lastNameRequired: string;
@@ -324,6 +325,7 @@ const en: Translations = {
     bookingReference: 'Booking Reference',
     redirecting: 'Redirecting to payment...',
     acceptTermsError: 'Please accept the terms and cancellation policy',
+    recaptchaError: 'Please complete the "I\'m not a robot" check before continuing.',
     fillRequiredError: 'Please fill in all required fields (name, email, phone) and fix any errors below.',
     firstNameRequired: 'First name is required',
     lastNameRequired: 'Last name is required',
@@ -521,6 +523,7 @@ const al: Translations = {
     bookingReference: 'Referenca e Rezervimit',
     redirecting: 'Duke ridrejtuar te pagesa...',
     acceptTermsError: 'Ju lutemi pranoni termat dhe politikën e anulimit',
+    recaptchaError: 'Ju lutemi plotësoni kontrollin "Nuk jam robot" para se të vazhdoni.',
     fillRequiredError: 'Ju lutemi plotësoni të gjitha fushat e kërkuara.',
     firstNameRequired: 'Emri është i detyrueshëm',
     lastNameRequired: 'Mbiemri është i detyrueshëm',
@@ -718,6 +721,7 @@ const de: Translations = {
     bookingReference: 'Buchungsnummer',
     redirecting: 'Weiterleitung zur Zahlung...',
     acceptTermsError: 'Bitte akzeptieren Sie die AGB und Stornierungsbedingungen',
+    recaptchaError: 'Bitte bestätigen Sie „Ich bin kein Roboter“, bevor Sie fortfahren.',
     fillRequiredError: 'Bitte füllen Sie alle Pflichtfelder aus (Name, E-Mail, Telefon).',
     firstNameRequired: 'Vorname ist erforderlich',
     lastNameRequired: 'Nachname ist erforderlich',

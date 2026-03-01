@@ -1,14 +1,40 @@
 /**
  * Vercel serverless: create Stripe Checkout Session for booking payment.
  * POST body: { ...bookingPayload, successUrl, cancelUrl }
- * Env: STRIPE_SECRET_KEY
+ * Env: STRIPE_SECRET_KEY, optional: ALLOWED_ORIGINS (comma-separated, e.g. https://elegantlimo.ch,https://www.elegantlimo.ch)
  */
 
 import Stripe from 'stripe';
 
+const MIN_AMOUNT_CENTIMES = 50;   // CHF 0.50
+const MAX_AMOUNT_CHF = 15000;     // Cap to prevent abuse
+
 function getEnv(name, fallback) {
   const v = process.env[name];
   return (v && v.trim()) ? v.trim() : fallback;
+}
+
+/** Return allowed hostnames (e.g. elegantlimo.ch,www.elegantlimo.ch). Empty = skip redirect validation. */
+function getAllowedHosts() {
+  const raw = getEnv('ALLOWED_ORIGINS', '');
+  if (!raw) return [];
+  return raw.split(',').map((o) => o.trim().toLowerCase().replace(/^https?:\/\//, '').split('/')[0]).filter(Boolean);
+}
+
+/** Ensure successUrl and cancelUrl point to allowed origins to prevent open redirect / phishing. */
+function validateRedirectUrls(successUrl, cancelUrl) {
+  const allowed = getAllowedHosts();
+  if (allowed.length === 0) return { ok: true };
+  try {
+    const hostSuccess = new URL(successUrl).hostname.toLowerCase();
+    const hostCancel = new URL(cancelUrl).hostname.toLowerCase();
+    const ok = allowed.some((h) => hostSuccess === h || hostSuccess.endsWith('.' + h));
+    const ok2 = allowed.some((h) => hostCancel === h || hostCancel.endsWith('.' + h));
+    if (ok && ok2) return { ok: true };
+    return { ok: false, error: 'successUrl and cancelUrl must point to your site (set ALLOWED_ORIGINS in production)' };
+  } catch (e) {
+    return { ok: false, error: 'Invalid successUrl or cancelUrl' };
+  }
 }
 
 /** Metadata values must be strings, max 500 chars each */
@@ -65,11 +91,47 @@ export default async function handler(req, res) {
     return;
   }
 
+  const urlCheck = validateRedirectUrls(successUrl, cancelUrl);
+  if (!urlCheck.ok) {
+    res.status(400).json({ error: urlCheck.error });
+    return;
+  }
+
+  const recaptchaSecret = getEnv('RECAPTCHA_SECRET_KEY', '');
+  if (recaptchaSecret) {
+    const token = (body.recaptchaToken || '').trim();
+    if (!token) {
+      res.status(400).json({ error: 'Please complete the security check (reCAPTCHA) and try again.' });
+      return;
+    }
+    let verifyRes;
+    try {
+      verifyRes = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ secret: recaptchaSecret, response: token }).toString(),
+      });
+    } catch (e) {
+      console.error('reCAPTCHA verify request failed:', e);
+      res.status(500).json({ error: 'Security check temporarily unavailable. Please try again.' });
+      return;
+    }
+    const verify = await verifyRes.json().catch(() => ({}));
+    if (!verify.success) {
+      res.status(400).json({ error: 'Security check failed. Please complete the "I\'m not a robot" check and try again.' });
+      return;
+    }
+  }
+
   const totalPrice = Number(body.totalPrice) || 0;
   const amountCentimes = Math.round(totalPrice * 100); // CHF: 1 CHF = 100 centimes
 
-  if (amountCentimes < 50) {
+  if (amountCentimes < MIN_AMOUNT_CENTIMES) {
     res.status(400).json({ error: 'Amount must be at least CHF 0.50' });
+    return;
+  }
+  if (totalPrice > MAX_AMOUNT_CHF) {
+    res.status(400).json({ error: `Amount must not exceed CHF ${MAX_AMOUNT_CHF.toLocaleString()}` });
     return;
   }
 

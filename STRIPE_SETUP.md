@@ -43,6 +43,17 @@ Set this in:
 - **Vercel**: Project → Settings → Environment Variables → add `STRIPE_SECRET_KEY` = `sk_live_...` for Production (and Preview if you want).
 - **Local**: `.env` (and ensure `.env` is in `.gitignore`).
 
+### reCAPTCHA v2 (before payment)
+
+A reCAPTCHA v2 checkbox is shown before the “Pay with Stripe” button. Set both keys so the API verifies the token:
+
+| Variable | Where | Notes |
+|----------|--------|--------|
+| `VITE_RECAPTCHA_SITE_KEY` | Frontend (e.g. Vercel env or `.env`) | Public; used by the checkout page. |
+| `RECAPTCHA_SECRET_KEY` | Backend only (Vercel / server) | **Never** commit; set in Vercel Dashboard. |
+
+If `RECAPTCHA_SECRET_KEY` is not set, the API skips verification (useful for local dev). See `.env.example` for the variable names.
+
 ### Frontend (optional for current flow)
 
 The current flow does **not** use a frontend Stripe key: the frontend only calls your API `POST /api/create-stripe-checkout-session` and redirects to the returned URL. If you later add Stripe.js (e.g. Payment Element), you would set:
