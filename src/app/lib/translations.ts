@@ -15,6 +15,12 @@ export interface Translations {
     motto: string;
     poweredBy: string;
     allRightsReserved: string;
+    privacy: string;
+    terms: string;
+  };
+  breadcrumb: {
+    summary: string;
+    checkout: string;
   };
   home: {
     hero: {
@@ -73,6 +79,9 @@ export interface Translations {
     flightNumberLabel: string;
     flightNumberPlaceholder: string;
     flightNumberHint: string;
+    priceRangeForRoute: string;
+    fromPrice: string;
+    selectVehicleForExactPrice: string;
     badgeMax3Pax: string;
     badgeMax7Pax: string;
     featureLeatherInterior: string;
@@ -153,6 +162,8 @@ export interface Translations {
     secureStripe: string;
     emailReceipt: string;
     termsAndPrivacy: string;
+    termsAndPrivacyPrefix: string;
+    termsAndPrivacyAnd: string;
   };
   success: {
     confirmingPayment: string;
@@ -213,6 +224,12 @@ const en: Translations = {
     motto: 'Premium Limousine Service for Discerning Travelers',
     poweredBy: 'Powered by',
     allRightsReserved: 'All rights reserved.',
+    privacy: 'Privacy Policy',
+    terms: 'Terms & Conditions',
+  },
+  breadcrumb: {
+    summary: 'Summary',
+    checkout: 'Checkout',
   },
   home: {
     hero: {
@@ -271,6 +288,9 @@ const en: Translations = {
     flightNumberLabel: 'Flight number (if you arrive by plane)',
     flightNumberPlaceholder: 'e.g. LX123, BA718',
     flightNumberHint: 'This helps your chauffeur track your arrival. Leave empty if you are not flying.',
+    priceRangeForRoute: 'Price range for this route',
+    fromPrice: 'From',
+    selectVehicleForExactPrice: 'Select a vehicle below for the exact price.',
     badgeMax3Pax: 'Max 3 Pax',
     badgeMax7Pax: 'Max 7 Pax',
     featureLeatherInterior: 'Leather interior',
@@ -351,6 +371,8 @@ const en: Translations = {
     secureStripe: 'Secure payment powered by Stripe',
     emailReceipt: 'Email receipt after payment',
     termsAndPrivacy: 'I agree to the Terms & Conditions and Privacy Policy',
+    termsAndPrivacyPrefix: 'I agree to the',
+    termsAndPrivacyAnd: 'and',
   },
   success: {
     confirmingPayment: 'Confirming your payment...',
@@ -411,6 +433,12 @@ const al: Translations = {
     motto: 'Shërbim Premium Limuzine për Udhëtarë të Zgjedhur',
     poweredBy: 'Fuqizuar nga',
     allRightsReserved: 'Të gjitha të drejtat e rezervuara.',
+    privacy: 'Politika e Privatësisë',
+    terms: 'Termat dhe Kushtet',
+  },
+  breadcrumb: {
+    summary: 'Përmbledhje',
+    checkout: 'Pagesa',
   },
   home: {
     hero: {
@@ -469,6 +497,9 @@ const al: Translations = {
     flightNumberLabel: 'Numri i fluturimit (nëse arrini me aeroplan)',
     flightNumberPlaceholder: 'p.sh. LX123, BA718',
     flightNumberHint: 'Kjo ndihmon shoferin tuaj të ndjekë mbërritjen tuaj. Lini bosh nëse nuk fluturoni.',
+    priceRangeForRoute: 'Gama e çmimeve për këtë rrugë',
+    fromPrice: 'Nga',
+    selectVehicleForExactPrice: 'Zgjidhni një mjet më poshtë për çmimin e saktë.',
     badgeMax3Pax: 'Maks 3 pax',
     badgeMax7Pax: 'Maks 7 pax',
     featureLeatherInterior: 'Brendshmëri lëkure',
@@ -549,6 +580,8 @@ const al: Translations = {
     secureStripe: 'Pagesë e sigurt me Stripe',
     emailReceipt: 'Faturë me email pas pagesës',
     termsAndPrivacy: 'Pajtohem me Termat & Kushtet dhe Politikën e Privatësisë',
+    termsAndPrivacyPrefix: 'Pajtohem me',
+    termsAndPrivacyAnd: 'dhe',
   },
   success: {
     confirmingPayment: 'Duke konfirmuar pagesën tuaj...',
@@ -609,6 +642,12 @@ const de: Translations = {
     motto: 'Premium Limousinenservice für anspruchsvolle Reisende',
     poweredBy: 'Powered by',
     allRightsReserved: 'Alle Rechte vorbehalten.',
+    privacy: 'Datenschutz',
+    terms: 'AGB',
+  },
+  breadcrumb: {
+    summary: 'Übersicht',
+    checkout: 'Kasse',
   },
   home: {
     hero: {
@@ -667,6 +706,9 @@ const de: Translations = {
     flightNumberLabel: 'Flugnummer (falls Sie mit dem Flugzeug anreisen)',
     flightNumberPlaceholder: 'z.B. LX123, BA718',
     flightNumberHint: 'Dies hilft Ihrem Chauffeur, Ihre Ankunft zu verfolgen. Leer lassen, wenn Sie nicht fliegen.',
+    priceRangeForRoute: 'Preisbereich für diese Strecke',
+    fromPrice: 'Ab',
+    selectVehicleForExactPrice: 'Wählen Sie unten ein Fahrzeug für den genauen Preis.',
     badgeMax3Pax: 'Max 3 Pax',
     badgeMax7Pax: 'Max 7 Pax',
     featureLeatherInterior: 'Lederausstattung',
@@ -747,6 +789,8 @@ const de: Translations = {
     secureStripe: 'Sichere Zahlung mit Stripe',
     emailReceipt: 'E-Mail-Belehrung nach der Zahlung',
     termsAndPrivacy: 'Ich akzeptiere die AGB und die Datenschutzrichtlinie',
+    termsAndPrivacyPrefix: 'Ich akzeptiere die',
+    termsAndPrivacyAnd: 'und die',
   },
   success: {
     confirmingPayment: 'Zahlung wird bestätigt...',

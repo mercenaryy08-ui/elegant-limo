@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import ReCAPTCHA from 'react-google-recaptcha';
 import {
@@ -32,6 +32,7 @@ import { Badge } from '../components/ui/badge';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { toast } from 'sonner';
 import { AppHeader } from '../components/AppHeader';
+import { Breadcrumb } from '../components/Breadcrumb';
 import { getVehicleById } from '../lib/fleet';
 import { formatCHF, ADD_ONS, calculatePrice } from '../lib/pricing';
 import { generateInvoiceLineItems } from '../lib/policies';
@@ -322,6 +323,14 @@ export function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
+            <Breadcrumb
+              items={[
+                { label: t.nav.home, href: '/' },
+                { label: t.breadcrumb.summary, href: '/summary' },
+                { label: t.breadcrumb.checkout },
+              ]}
+              className="mb-4"
+            />
             <button
               type="button"
               onClick={() => navigate('/summary')}
@@ -574,7 +583,14 @@ export function CheckoutPage() {
                       htmlFor="terms"
                       className="text-sm text-foreground cursor-pointer leading-relaxed"
                     >
-                      {t.checkout.termsAndPrivacy}
+                      {t.checkout.termsAndPrivacyPrefix}{' '}
+                      <Link to="/terms" className="text-[#d4af37] hover:underline font-medium" target="_blank" rel="noopener noreferrer">
+                        {t.footer.terms}
+                      </Link>
+                      {' '}{t.checkout.termsAndPrivacyAnd}{' '}
+                      <Link to="/privacy" className="text-[#d4af37] hover:underline font-medium" target="_blank" rel="noopener noreferrer">
+                        {t.footer.privacy}
+                      </Link>
                     </label>
                   </div>
                 </div>

@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTranslations } from '../lib/translations';
 import { ThemeToggle } from './ThemeToggle';
@@ -38,9 +38,9 @@ export function AppFooter() {
             <p className="text-xs max-w-[220px] text-muted-foreground">{t.footer.motto}</p>
           </div>
 
-          {/* Home · Cancel my booking */}
+          {/* Home · Cancel booking · Privacy · Terms */}
           {!isOps && (
-            <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
               <button
                 type="button"
                 onClick={handleLogoClick}
@@ -56,6 +56,14 @@ export function AppFooter() {
               >
                 {t.cancelBooking.pageTitle}
               </button>
+              <span className="text-muted-foreground">·</span>
+              <Link to="/privacy" className="text-foreground/80 hover:text-[#d4af37] transition-colors">
+                {t.footer.privacy}
+              </Link>
+              <span className="text-muted-foreground">·</span>
+              <Link to="/terms" className="text-foreground/80 hover:text-[#d4af37] transition-colors">
+                {t.footer.terms}
+              </Link>
             </div>
           )}
 

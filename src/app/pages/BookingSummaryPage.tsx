@@ -6,6 +6,7 @@ import { useBooking } from '../contexts/BookingContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTranslations } from '../lib/translations';
 import { AppHeader } from '../components/AppHeader';
+import { Breadcrumb } from '../components/Breadcrumb';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
@@ -170,10 +171,21 @@ export function BookingSummaryPage() {
     return null;
   }
 
+  const priceValues = Object.values(vehiclePrices).filter((p) => p > 0);
+  const minPrice = priceValues.length ? Math.min(...priceValues) : 0;
+  const maxPrice = priceValues.length ? Math.max(...priceValues) : 0;
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
       <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <Breadcrumb
+          items={[
+            { label: t.nav.home, href: '/' },
+            { label: t.breadcrumb.summary },
+          ]}
+          className="mb-4"
+        />
         <div className="mb-6">
           <h1 className="text-2xl font-serif text-foreground">{t.summary.pageTitle}</h1>
           <p className="text-sm text-muted-foreground">{t.summary.pageSubtitle}</p>
@@ -262,6 +274,23 @@ export function BookingSummaryPage() {
             )}
           </div>
         </section>
+
+        {/* Price breakdown before vehicle choice */}
+        {minPrice > 0 && (
+          <section className="bg-card rounded-xl shadow-sm border border-[#d4af37]/20 p-6 mb-8">
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t.summary.priceRangeForRoute}</h3>
+            <p className="text-2xl font-bold text-[#d4af37]">
+              {minPrice === maxPrice
+                ? `CHF ${Math.round(minPrice)}`
+                : `${t.summary.fromPrice} CHF ${Math.round(minPrice)} – CHF ${Math.round(maxPrice)}`}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {minPrice === maxPrice
+                ? t.summary.estimatedPrice
+                : t.summary.selectVehicleForExactPrice}
+            </p>
+          </section>
+        )}
 
         {/* 2. Choose vehicle */}
         <section className="mb-8">
