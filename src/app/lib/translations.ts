@@ -21,6 +21,8 @@ export interface Translations {
       time: string;
       passengers: string;
       continue: string;
+      update: string;
+      book: string;
       pickupPlaceholder: string;
       dropoffPlaceholder: string;
     };
@@ -60,6 +62,21 @@ export interface Translations {
     recalcError: string;
     enterBothAddresses: string;
     selectAddressesToRecalc: string;
+    flightDetails: string;
+    flightNumberLabel: string;
+    flightNumberPlaceholder: string;
+    flightNumberHint: string;
+    badgeMax3Pax: string;
+    badgeMax7Pax: string;
+    featureLeatherInterior: string;
+    featureFreeWifi: string;
+    feature2Suitcases: string;
+    featureExecutiveComfort: string;
+    featureExtraLegroom: string;
+    feature3Suitcases: string;
+    featureFamiliesGroups: string;
+    featureConferenceSeating: string;
+    feature7Suitcases: string;
   };
   pricing: {
     title: string;
@@ -112,6 +129,19 @@ export interface Translations {
     justDetails: string;
     payment: string;
     addOns: string;
+    placeholderFirstName: string;
+    placeholderLastName: string;
+    placeholderEmail: string;
+    placeholderPhone: string;
+    placeholderSpecialRequests: string;
+    specialRequestsOptional: string;
+    addOnVipName: string;
+    addOnVipDesc: string;
+    invoiceTransfer: string;
+    invoiceTotal: string;
+    vehicleLabel: string;
+    fromLabel: string;
+    toLabel: string;
     secureStripe: string;
     emailReceipt: string;
     termsAndPrivacy: string;
@@ -149,6 +179,17 @@ export interface Translations {
     success: string;
     passenger: string;
     passengers: string;
+    person: string;
+    people: string;
+  };
+  cancellationPolicy: {
+    title: string;
+    summary: string;
+    detail1: string;
+    detail2: string;
+    detail3: string;
+    detail4: string;
+    detail5: string;
   };
 }
 
@@ -170,6 +211,8 @@ const en: Translations = {
       time: 'Time',
       passengers: 'Passengers',
       continue: 'Continue',
+      update: 'Update',
+      book: 'Book',
       pickupPlaceholder: 'Enter pickup address',
       dropoffPlaceholder: 'Enter dropoff address',
     },
@@ -209,6 +252,21 @@ const en: Translations = {
     recalcError: 'Could not recalculate route',
     enterBothAddresses: 'Enter both From and To addresses',
     selectAddressesToRecalc: 'Please select addresses from the suggestions to recalculate',
+    flightDetails: 'Flight details (optional)',
+    flightNumberLabel: 'Flight number (if you arrive by plane)',
+    flightNumberPlaceholder: 'e.g. LX123, BA718',
+    flightNumberHint: 'This helps your chauffeur track your arrival. Leave empty if you are not flying.',
+    badgeMax3Pax: 'Max 3 Pax',
+    badgeMax7Pax: 'Max 7 Pax',
+    featureLeatherInterior: 'Leather interior',
+    featureFreeWifi: 'Free Wi-Fi & water',
+    feature2Suitcases: '2 suitcases',
+    featureExecutiveComfort: 'Executive comfort',
+    featureExtraLegroom: 'Extra legroom',
+    feature3Suitcases: '3 suitcases',
+    featureFamiliesGroups: 'Ideal for families & groups',
+    featureConferenceSeating: 'Conference seating',
+    feature7Suitcases: '7 suitcases',
   },
   pricing: {
     title: 'Your Journey Details',
@@ -261,6 +319,19 @@ const en: Translations = {
     justDetails: 'Just a few more details to confirm your booking',
     payment: 'Payment',
     addOns: 'Add-ons',
+    placeholderFirstName: 'John',
+    placeholderLastName: 'Doe',
+    placeholderEmail: 'john.doe@example.com',
+    placeholderPhone: '+41 79 123 4567',
+    placeholderSpecialRequests: 'Any special requirements or preferences...',
+    specialRequestsOptional: '(Optional)',
+    addOnVipName: 'VIP Service',
+    addOnVipDesc: 'Airport meet-and-greet inside the terminal (chauffeur enters the terminal to pick you up)',
+    invoiceTransfer: 'Transfer',
+    invoiceTotal: 'Total',
+    vehicleLabel: 'Vehicle',
+    fromLabel: 'From',
+    toLabel: 'To',
     secureStripe: 'Secure payment powered by Stripe',
     emailReceipt: 'Email receipt after payment',
     termsAndPrivacy: 'I agree to the Terms & Conditions and Privacy Policy',
@@ -298,6 +369,17 @@ const en: Translations = {
     success: 'Success!',
     passenger: 'Passenger',
     passengers: 'Passengers',
+    person: 'Person',
+    people: 'People',
+  },
+  cancellationPolicy: {
+    title: 'Cancellation Policy',
+    summary: 'Free cancellation up to 48 hours before pickup',
+    detail1: 'Cancel free of charge if you cancel ≥48 hours before your scheduled pickup time',
+    detail2: 'Cancellations between 24-48 hours before pickup: Free cancellation (grace period)',
+    detail3: 'Cancellations <24 hours before pickup: 50% cancellation fee applies',
+    detail4: 'To cancel, contact us by phone or email with your booking reference',
+    detail5: 'Refunds are processed within 5-7 business days',
   },
 };
 
@@ -319,6 +401,8 @@ const al: Translations = {
       time: 'Koha',
       passengers: 'Pasagjerë',
       continue: 'Vazhdo',
+      update: 'Përditëso',
+      book: 'Rezervo',
       pickupPlaceholder: 'Vendosni adresën e marrjes',
       dropoffPlaceholder: 'Vendosni adresën e lënies',
     },
@@ -358,6 +442,21 @@ const al: Translations = {
     recalcError: 'Nuk u rillogarit rruga',
     enterBothAddresses: 'Vendosni adresat Nga dhe Deri',
     selectAddressesToRecalc: 'Ju lutemi zgjidhni adresat nga sugjerimet për të rillogaritur',
+    flightDetails: 'Detajet e fluturimit (opsionale)',
+    flightNumberLabel: 'Numri i fluturimit (nëse arrini me aeroplan)',
+    flightNumberPlaceholder: 'p.sh. LX123, BA718',
+    flightNumberHint: 'Kjo ndihmon shoferin tuaj të ndjekë mbërritjen tuaj. Lini bosh nëse nuk fluturoni.',
+    badgeMax3Pax: 'Maks 3 pax',
+    badgeMax7Pax: 'Maks 7 pax',
+    featureLeatherInterior: 'Brendshmëri lëkure',
+    featureFreeWifi: 'Wi-Fi dhe ujë falas',
+    feature2Suitcases: '2 valixhe',
+    featureExecutiveComfort: 'Komoditet ekzekutiv',
+    featureExtraLegroom: 'Hapësirë shtesë për këmbë',
+    feature3Suitcases: '3 valixhe',
+    featureFamiliesGroups: 'Ideale për familje dhe grupe',
+    featureConferenceSeating: 'Ulje konference',
+    feature7Suitcases: '7 valixhe',
   },
   pricing: {
     title: 'Detajet e Udhëtimit Tuaj',
@@ -410,6 +509,19 @@ const al: Translations = {
     justDetails: 'Vetëm disa detaje të tjera për të konfirmuar rezervimin',
     payment: 'Pagesa',
     addOns: 'Shtesa',
+    placeholderFirstName: 'Emri',
+    placeholderLastName: 'Mbiemri',
+    placeholderEmail: 'emri.mbiemri@shembull.com',
+    placeholderPhone: '+41 79 123 4567',
+    placeholderSpecialRequests: 'Kërkesa ose preferenca të veçanta...',
+    specialRequestsOptional: '(Opsionale)',
+    addOnVipName: 'Shërbim VIP',
+    addOnVipDesc: 'Pritje në aeroport brenda terminalit (shoferi hyn në terminal për t\'ju marrë)',
+    invoiceTransfer: 'Transfer',
+    invoiceTotal: 'Totali',
+    vehicleLabel: 'Mjeti',
+    fromLabel: 'Nga',
+    toLabel: 'Deri',
     secureStripe: 'Pagesë e sigurt me Stripe',
     emailReceipt: 'Faturë me email pas pagesës',
     termsAndPrivacy: 'Pajtohem me Termat & Kushtet dhe Politikën e Privatësisë',
@@ -447,6 +559,17 @@ const al: Translations = {
     success: 'Sukses!',
     passenger: 'Pasagjer',
     passengers: 'Pasagjerë',
+    person: 'Person',
+    people: 'Njerëz',
+  },
+  cancellationPolicy: {
+    title: 'Politika e Anulimit',
+    summary: 'Anulim falas deri 48 orë para marrjes',
+    detail1: 'Anuloni falas nëse anuloni ≥48 orë para kohës së planifikuar të marrjes',
+    detail2: 'Anulimet 24-48 orë para marrjes: Anulim falas (periudhë e mirë)',
+    detail3: 'Anulimet <24 orë para marrjes: aplikohet tarifa 50% e anulimit',
+    detail4: 'Për të anuluar, na kontaktoni me telefon ose email me referencën e rezervimit',
+    detail5: 'Rimbursimet përpunohen brenda 5-7 ditëve pune',
   },
 };
 
@@ -468,6 +591,8 @@ const de: Translations = {
       time: 'Uhrzeit',
       passengers: 'Passagiere',
       continue: 'Weiter',
+      update: 'Aktualisieren',
+      book: 'Buchen',
       pickupPlaceholder: 'Abholadresse eingeben',
       dropoffPlaceholder: 'Zieladresse eingeben',
     },
@@ -507,6 +632,21 @@ const de: Translations = {
     recalcError: 'Strecke konnte nicht neu berechnet werden',
     enterBothAddresses: 'Bitte Abhol- und Zielort eingeben',
     selectAddressesToRecalc: 'Bitte wählen Sie Adressen aus den Vorschlägen, um die Strecke neu zu berechnen.',
+    flightDetails: 'Flugdetails (optional)',
+    flightNumberLabel: 'Flugnummer (falls Sie mit dem Flugzeug anreisen)',
+    flightNumberPlaceholder: 'z.B. LX123, BA718',
+    flightNumberHint: 'Dies hilft Ihrem Chauffeur, Ihre Ankunft zu verfolgen. Leer lassen, wenn Sie nicht fliegen.',
+    badgeMax3Pax: 'Max 3 Pax',
+    badgeMax7Pax: 'Max 7 Pax',
+    featureLeatherInterior: 'Lederausstattung',
+    featureFreeWifi: 'Kostenloses WLAN & Wasser',
+    feature2Suitcases: '2 Koffer',
+    featureExecutiveComfort: 'Business-Komfort',
+    featureExtraLegroom: 'Extra Beinfreiheit',
+    feature3Suitcases: '3 Koffer',
+    featureFamiliesGroups: 'Ideal für Familien & Gruppen',
+    featureConferenceSeating: 'Konferenzsitzanordnung',
+    feature7Suitcases: '7 Koffer',
   },
   pricing: {
     title: 'Ihre Fahrtdetails',
@@ -559,6 +699,19 @@ const de: Translations = {
     justDetails: 'Noch ein paar Angaben zur Bestätigung Ihrer Buchung',
     payment: 'Zahlung',
     addOns: 'Extras',
+    placeholderFirstName: 'Max',
+    placeholderLastName: 'Muster',
+    placeholderEmail: 'max.muster@beispiel.ch',
+    placeholderPhone: '+41 79 123 4567',
+    placeholderSpecialRequests: 'Besondere Wünsche oder Präferenzen...',
+    specialRequestsOptional: '(Optional)',
+    addOnVipName: 'VIP-Service',
+    addOnVipDesc: 'Flughafen-Begrüssung im Terminal (Chauffeur holt Sie im Terminal ab)',
+    invoiceTransfer: 'Transfer',
+    invoiceTotal: 'Gesamt',
+    vehicleLabel: 'Fahrzeug',
+    fromLabel: 'Von',
+    toLabel: 'Nach',
     secureStripe: 'Sichere Zahlung mit Stripe',
     emailReceipt: 'E-Mail-Belehrung nach der Zahlung',
     termsAndPrivacy: 'Ich akzeptiere die AGB und die Datenschutzrichtlinie',
@@ -596,6 +749,17 @@ const de: Translations = {
     success: 'Erfolg!',
     passenger: 'Passagier',
     passengers: 'Passagiere',
+    person: 'Person',
+    people: 'Personen',
+  },
+  cancellationPolicy: {
+    title: 'Stornierungsbedingungen',
+    summary: 'Kostenlose Stornierung bis 48 Stunden vor Abholung',
+    detail1: 'Kostenlose Stornierung, wenn Sie ≥48 Stunden vor der geplanten Abholzeit stornieren',
+    detail2: 'Stornierungen 24–48 Stunden vor Abholung: Kostenlose Stornierung (Karenzzeit)',
+    detail3: 'Stornierungen <24 Stunden vor Abholung: 50% Stornierungsgebühr',
+    detail4: 'Zum Stornieren kontaktieren Sie uns per Telefon oder E-Mail mit Ihrer Buchungsnummer',
+    detail5: 'Erstattungen werden innerhalb von 5–7 Werktagen bearbeitet',
   },
 };
 

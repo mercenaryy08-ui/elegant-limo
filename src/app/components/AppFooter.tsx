@@ -1,5 +1,4 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTranslations } from '../lib/translations';
 import { ThemeToggle } from './ThemeToggle';
@@ -7,7 +6,6 @@ import { ThemeToggle } from './ThemeToggle';
 export function AppFooter() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme } = useTheme();
   const { language, setLanguage } = useLanguage();
   const t = useTranslations(language);
   const isOps = location.pathname.startsWith('/ops');
@@ -44,7 +42,6 @@ export function AppFooter() {
               </>
             )}
             <span className="flex items-center justify-center gap-2 text-muted-foreground flex-wrap">
-              <span className="text-xs sm:text-sm">{theme === 'dark' ? 'Dark' : 'Light'}</span>
               <ThemeToggle />
             </span>
             <span className="text-muted-foreground hidden sm:inline">·</span>

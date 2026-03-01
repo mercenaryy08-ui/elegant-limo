@@ -19,30 +19,30 @@ import { toast } from 'sonner';
 const VEHICLE_CARDS = [
   {
     id: 'vehicle-standard-eclass',
-    badge: 'Max 3 Pax',
+    badgeKey: 'badgeMax3Pax' as const,
     popular: false,
     imageUrl: '/images/fleet/mercedeseqs.png',
     title: 'Mercedes E-Class',
     subtitle: 'Business Class',
-    features: ['Leather interior', 'Free Wi-Fi & water', '2 suitcases'],
+    featureKeys: ['featureLeatherInterior', 'featureFreeWifi', 'feature2Suitcases'] as const,
   },
   {
     id: 'vehicle-premium-sclass',
-    badge: null,
+    badgeKey: null,
     popular: true,
     imageUrl: '/images/fleet/eclass.png',
     title: 'Mercedes S-Class',
     subtitle: 'First Class',
-    features: ['Executive comfort', 'Extra legroom', '3 suitcases'],
+    featureKeys: ['featureExecutiveComfort', 'featureExtraLegroom', 'feature3Suitcases'] as const,
   },
   {
     id: 'vehicle-van-vclass',
-    badge: 'Max 7 Pax',
+    badgeKey: 'badgeMax7Pax' as const,
     popular: false,
     imageUrl: '/images/fleet/vclass.png',
     title: 'Mercedes V-Class',
     subtitle: 'Business Van',
-    features: ['Ideal for families & groups', 'Conference seating', '7 suitcases'],
+    featureKeys: ['featureFamiliesGroups', 'featureConferenceSeating', 'feature7Suitcases'] as const,
   },
 ];
 
@@ -286,9 +286,9 @@ export function BookingSummaryPage() {
                       {t.summary.popular}
                     </div>
                   )}
-                  {card.badge && !card.popular && (
+                  {card.badgeKey && !card.popular && (
                     <div className="absolute top-4 right-4 bg-gray-100 text-xs font-bold px-2 py-1 rounded">
-                      {card.badge}
+                      {t.summary[card.badgeKey]}
                     </div>
                   )}
                   <img
@@ -299,8 +299,8 @@ export function BookingSummaryPage() {
                   <h3 className="text-lg font-bold text-[#0a0a0a]">{card.title}</h3>
                   <p className="text-gray-500 text-sm mb-2">{card.subtitle}</p>
                   <ul className="text-xs text-gray-500 space-y-1 mb-4">
-                    {card.features.map((f, i) => (
-                      <li key={i}>• {f}</li>
+                    {card.featureKeys.map((key, i) => (
+                      <li key={i}>• {t.summary[key]}</li>
                     ))}
                   </ul>
                   <div className="text-[#B08D22] font-bold">
@@ -315,21 +315,21 @@ export function BookingSummaryPage() {
         {/* Flight number (optional) */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
           <h2 className="text-xl font-serif font-bold mb-4 border-b pb-2">
-            Flight details (optional)
+            {t.summary.flightDetails}
           </h2>
           <div className="space-y-2 max-w-md">
             <Label htmlFor="flightNumber" className="text-sm text-gray-700">
-              Flight number (if you arrive by plane)
+              {t.summary.flightNumberLabel}
             </Label>
             <Input
               id="flightNumber"
-              placeholder="e.g. LX123, BA718"
+              placeholder={t.summary.flightNumberPlaceholder}
               value={bookingData.flightNumber ?? ''}
               onChange={(e) => updateBookingData({ flightNumber: e.target.value })}
               className="h-11 border-[#d4af37]/30 focus:border-[#d4af37] focus:ring-[#d4af37] bg-[#fafafa]"
             />
             <p className="text-xs text-slate-500">
-              This helps your chauffeur track your arrival. Leave empty if you are not flying.
+              {t.summary.flightNumberHint}
             </p>
           </div>
         </section>

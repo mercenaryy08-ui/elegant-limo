@@ -30,8 +30,8 @@ import { Badge } from '../components/ui/badge';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { toast } from 'sonner';
 import { getVehicleById } from '../lib/fleet';
-import { formatCHF, ADD_ONS } from '../lib/pricing';
-import { CANCELLATION_POLICY, generateInvoiceLineItems } from '../lib/policies';
+import { formatCHF, ADD_ONS, calculatePrice } from '../lib/pricing';
+import { generateInvoiceLineItems } from '../lib/policies';
 
 const getApiBase = () => (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_API_BASE_URL ?? '';
 
@@ -95,10 +95,28 @@ export function CheckoutPage() {
       const reference = `EL${Date.now().toString().slice(-8)}`;
       const bookingId = `booking-${Date.now()}`;
       const customerEmail = data.email || bookingData.customerDetails?.email;
-      const totalPrice =
-        (bookingData.totalPrice ?? 0) +
-        ADD_ONS.filter((a) => (bookingData.selectedAddOns ?? []).includes(a.id)).reduce((s, a) => s + a.price, 0);
       const vehicle = getVehicleById(bookingData.vehicleId!);
+      if (!vehicle) {
+        toast.error('Vehicle not found. Please go back and select a vehicle.');
+        setIsSubmitting(false);
+        return;
+      }
+      // Recompute transfer price from from/to/vehicle (fixed route or per-km) so Stripe always gets the correct amount
+      let basePrice: number;
+      try {
+        const calc = calculatePrice({
+          from: bookingData.from ?? '',
+          to: bookingData.to ?? '',
+          vehicle,
+          distance: bookingData.distance,
+          selectedAddOns: [],
+        });
+        basePrice = calc.subtotal;
+      } catch {
+        basePrice = bookingData.totalPrice ?? 0;
+      }
+      const addOnsTotal = ADD_ONS.filter((a) => (bookingData.selectedAddOns ?? []).includes(a.id)).reduce((s, a) => s + a.price, 0);
+      const totalPrice = basePrice + addOnsTotal;
       const vehicleLabel = vehicle ? `${vehicle.name} (${vehicle.className})` : bookingData.vehicleId!;
 
       const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -170,6 +188,8 @@ export function CheckoutPage() {
   const addOnsTotal = ADD_ONS.filter((a) => selectedAddOns.includes(a.id)).reduce((s, a) => s + a.price, 0);
   const displayTotal = baseTotal + addOnsTotal;
 
+  const getAddOnName = (id: string) => (id === 'vip-meet-inside' ? t.checkout.addOnVipName : ADD_ONS.find((a) => a.id === id)?.name ?? id);
+
   // Generate invoice line items (or build from summary total + add-ons)
   const invoiceItems = bookingData.priceCalculation
     ? generateInvoiceLineItems({
@@ -180,13 +200,13 @@ export function CheckoutPage() {
             : `${bookingData.distance?.toFixed(1)} km × ${formatCHF(bookingData.priceCalculation.perKmRate!)}`,
         addOns: [
           ...(bookingData.priceCalculation.addOns ?? []),
-          ...ADD_ONS.filter((a) => selectedAddOns.includes(a.id)).map((a) => ({ name: a.name, price: a.price })),
+          ...ADD_ONS.filter((a) => selectedAddOns.includes(a.id)).map((a) => ({ name: getAddOnName(a.id), price: a.price })),
         ],
       })
     : [
-        { description: 'Transfer', amount: baseTotal, type: 'base' as const },
-        ...ADD_ONS.filter((a) => selectedAddOns.includes(a.id)).map((a) => ({ description: a.name, amount: a.price, type: 'addon' as const })),
-        { description: 'Total', amount: displayTotal, type: 'total' as const },
+        { description: t.checkout.invoiceTransfer, amount: baseTotal, type: 'base' as const },
+        ...ADD_ONS.filter((a) => selectedAddOns.includes(a.id)).map((a) => ({ description: getAddOnName(a.id), amount: a.price, type: 'addon' as const })),
+        { description: t.checkout.invoiceTotal, amount: displayTotal, type: 'total' as const },
       ];
 
   const BookingSummaryCard = () => (
@@ -203,7 +223,7 @@ export function CheckoutPage() {
           <div className="flex items-start gap-3">
             <Car className="w-4 h-4 text-[#d4af37] mt-1 flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-xs text-muted-foreground">Vehicle</p>
+              <p className="text-xs text-muted-foreground">{t.checkout.vehicleLabel}</p>
               <p className="text-sm font-medium text-[#0a0a0a]">
                 {vehicle.name} ({vehicle.className})
               </p>
@@ -219,7 +239,7 @@ export function CheckoutPage() {
                 <p className="text-sm font-medium text-[#0a0a0a]">{bookingData.from}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">To</p>
+                <p className="text-xs text-muted-foreground">{t.checkout.toLabel}</p>
                 <p className="text-sm font-medium text-[#0a0a0a]">{bookingData.to}</p>
               </div>
             </div>
@@ -258,7 +278,7 @@ export function CheckoutPage() {
                   <span
                     className={`text-sm ${item.type === 'total' ? 'font-semibold text-[#0a0a0a]' : 'text-muted-foreground'}`}
                   >
-                    {item.description}
+                    {item.type === 'total' ? t.checkout.invoiceTotal : item.description}
                   </span>
                   <span
                     className={`${item.type === 'total' ? 'text-xl font-bold text-[#d4af37]' : 'text-sm font-medium text-[#0a0a0a]'}`}
@@ -317,7 +337,7 @@ export function CheckoutPage() {
                       <Label htmlFor="firstName">{t.checkout.firstName} <span className="text-destructive">*</span></Label>
                       <Input
                         id="firstName"
-                        placeholder="John"
+                        placeholder={t.checkout.placeholderFirstName}
                         autoComplete="given-name"
                         {...register('firstName', {
                           validate: (v) => (v != null && String(v).trim() !== '') || t.checkout.firstNameRequired,
@@ -337,7 +357,7 @@ export function CheckoutPage() {
                       <Label htmlFor="lastName">{t.checkout.lastName} <span className="text-destructive">*</span></Label>
                       <Input
                         id="lastName"
-                        placeholder="Doe"
+                        placeholder={t.checkout.placeholderLastName}
                         autoComplete="family-name"
                         {...register('lastName', {
                           validate: (v) => (v != null && String(v).trim() !== '') || t.checkout.lastNameRequired,
@@ -362,7 +382,7 @@ export function CheckoutPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="john.doe@example.com"
+                      placeholder={t.checkout.placeholderEmail}
                       autoComplete="email"
                       {...register('email', {
                         validate: (v) => {
@@ -391,7 +411,7 @@ export function CheckoutPage() {
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="+41 79 123 4567"
+                      placeholder={t.checkout.placeholderPhone}
                       autoComplete="tel"
                       {...register('phone', {
                         validate: (v) => (v != null && String(v).trim() !== '') || t.checkout.phoneRequired,
@@ -408,10 +428,10 @@ export function CheckoutPage() {
 
                   {/* Special Requests */}
                   <div className="space-y-2">
-                    <Label htmlFor="specialRequests">{t.checkout.specialRequests} (Optional)</Label>
+                    <Label htmlFor="specialRequests">{t.checkout.specialRequests} {t.checkout.specialRequestsOptional}</Label>
                     <Textarea
                       id="specialRequests"
-                      placeholder="Any special requirements or preferences..."
+                      placeholder={t.checkout.placeholderSpecialRequests}
                       {...register('specialRequests')}
                       className="min-h-24 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
                       rows={3}
@@ -440,9 +460,13 @@ export function CheckoutPage() {
                           className="border-[#d4af37] data-[state=checked]:bg-[#d4af37] mt-0.5"
                         />
                         <div>
-                          <span className="font-medium text-[#0a0a0a]">{addon.name}</span>
+                          <span className="font-medium text-[#0a0a0a]">
+                            {addon.id === 'vip-meet-inside' ? t.checkout.addOnVipName : addon.name}
+                          </span>
                           <span className="ml-2 text-[#d4af37] font-semibold">{formatCHF(addon.price)}</span>
-                          <p className="text-sm text-muted-foreground mt-1">{addon.description}</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {addon.id === 'vip-meet-inside' ? t.checkout.addOnVipDesc : addon.description}
+                          </p>
                         </div>
                       </label>
                     );
@@ -483,10 +507,16 @@ export function CheckoutPage() {
               {/* Cancellation Policy */}
               <Card className="border-[#d4af37]/30 bg-[#fafafa]">
                 <div className="p-6 space-y-4">
-                  <h4 className="font-semibold text-[#0a0a0a]">{CANCELLATION_POLICY.title}</h4>
-                  <p className="text-sm text-muted-foreground">{CANCELLATION_POLICY.summary}</p>
+                  <h4 className="font-semibold text-[#0a0a0a]">{t.cancellationPolicy.title}</h4>
+                  <p className="text-sm text-muted-foreground">{t.cancellationPolicy.summary}</p>
                   <ul className="text-sm text-muted-foreground space-y-1.5">
-                    {CANCELLATION_POLICY.details.map((detail, index) => (
+                    {[
+                      t.cancellationPolicy.detail1,
+                      t.cancellationPolicy.detail2,
+                      t.cancellationPolicy.detail3,
+                      t.cancellationPolicy.detail4,
+                      t.cancellationPolicy.detail5,
+                    ].map((detail, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full mt-2 flex-shrink-0" />
                         <span>{detail}</span>

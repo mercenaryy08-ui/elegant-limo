@@ -455,7 +455,7 @@ export function HomePage() {
                     <SelectContent>
                       {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
                         <SelectItem key={num} value={num.toString()}>
-                          {num} {num === 1 ? 'Passenger' : 'Passengers'}
+                          {num} {num === 1 ? t.common.passenger : t.common.passengers}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -472,7 +472,7 @@ export function HomePage() {
                       onClick={handleUpdate}
                       disabled={isLoading}
                     >
-                      Update
+                      {t.home.form.update}
                     </Button>
                   )}
                   <Button
@@ -480,7 +480,7 @@ export function HomePage() {
                     className={`h-14 text-lg bg-gradient-to-r from-[#d4af37] to-[#b8941f] hover:from-[#b8941f] hover:to-[#d4af37] text-white shadow-lg transition-all duration-300 hover:shadow-xl ${isDirty ? 'flex-1' : 'w-full'}`}
                     disabled={isLoading}
                   >
-                    {isLoading ? t.common.loading : 'Book'}
+                    {isLoading ? t.common.loading : t.home.form.book}
                   </Button>
                 </div>
               </form>
