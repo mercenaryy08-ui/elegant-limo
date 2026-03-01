@@ -289,9 +289,7 @@ export function HomePage() {
               className="flex items-center gap-3 bg-transparent border-none cursor-pointer p-0 text-left"
               aria-label="Elegant Limo"
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-[#d4af37] to-[#b8941f] rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">E</span>
-              </div>
+              <img src="/images/logoelegantlimo.png" alt="Elegant Limo" className="w-10 h-10 rounded-lg object-cover" />
               <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-[#0a0a0a] dark:text-foreground">
                 {t.home.hero.title}
               </h1>
