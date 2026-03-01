@@ -8,6 +8,13 @@ export interface Translations {
     home: string;
     about: string;
     contact: string;
+    contactSupport: string;
+    bookNow: string;
+  };
+  footer: {
+    motto: string;
+    poweredBy: string;
+    allRightsReserved: string;
   };
   home: {
     hero: {
@@ -198,6 +205,13 @@ const en: Translations = {
     home: 'Home',
     about: 'About',
     contact: 'Contact',
+    contactSupport: 'Contact support',
+    bookNow: 'Book now',
+  },
+  footer: {
+    motto: 'Premium Limousine Service for Discerning Travelers',
+    poweredBy: 'Powered by',
+    allRightsReserved: 'All rights reserved.',
   },
   home: {
     hero: {
@@ -388,6 +402,13 @@ const al: Translations = {
     home: 'Ballina',
     about: 'Rreth Nesh',
     contact: 'Kontakt',
+    contactSupport: 'Mbështetje',
+    bookNow: 'Rezervo tani',
+  },
+  footer: {
+    motto: 'Shërbim Premium Limuzine për Udhëtarë të Zgjedhur',
+    poweredBy: 'Fuqizuar nga',
+    allRightsReserved: 'Të gjitha të drejtat e rezervuara.',
   },
   home: {
     hero: {
@@ -578,6 +599,13 @@ const de: Translations = {
     home: 'Start',
     about: 'Über uns',
     contact: 'Kontakt',
+    contactSupport: 'Support kontaktieren',
+    bookNow: 'Jetzt buchen',
+  },
+  footer: {
+    motto: 'Premium Limousinenservice für anspruchsvolle Reisende',
+    poweredBy: 'Powered by',
+    allRightsReserved: 'Alle Rechte vorbehalten.',
   },
   home: {
     hero: {

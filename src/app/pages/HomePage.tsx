@@ -12,6 +12,7 @@ import { Calendar } from '../components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { AddressAutocomplete } from '../components/AddressAutocomplete';
+import { AppHeader } from '../components/AppHeader';
 import { BookingMap } from '../components/BookingMap';
 import {
   Dialog,
@@ -280,23 +281,7 @@ export function HomePage() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-[#d4af37]/20 bg-white/95 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 md:py-6">
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={handleElegantLimoClick}
-              className="flex items-center gap-3 bg-transparent border-none cursor-pointer p-0 text-left"
-              aria-label="Elegant Limo"
-            >
-              <img src="/images/logoelegantlimo.png" alt="Elegant Limo" className="w-10 h-10 rounded-lg object-cover" />
-              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-[#0a0a0a] dark:text-foreground">
-                {t.home.hero.title}
-              </h1>
-            </button>
-          </div>
-        </div>
-      </header>
+      <AppHeader onLogoClick={handleElegantLimoClick} />
 
       {/* Background map + hero (image fallback when no map) */}
       <section className="relative min-h-[40vh] md:min-h-[50vh] overflow-hidden">
@@ -324,7 +309,7 @@ export function HomePage() {
       </section>
 
       {/* Booking Form */}
-      <section className="container mx-auto px-4 -mt-20 md:-mt-24 relative z-30 pb-20">
+      <section id="booking-form" className="container mx-auto px-4 -mt-20 md:-mt-24 relative z-30 pb-20">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-2xl shadow-2xl border border-[#d4af37]/30 overflow-hidden">
             <div className="h-2 bg-gradient-to-r from-[#b8941f] via-[#d4af37] to-[#b8941f]" />

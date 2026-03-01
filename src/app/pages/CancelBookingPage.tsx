@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTranslations } from '../lib/translations';
+import { AppHeader } from '../components/AppHeader';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -80,19 +81,16 @@ export function CancelBookingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-[#d4af37]/20 bg-white/95 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-[#0a0a0a] font-medium hover:text-[#d4af37] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t.summary.back}
-          </button>
-        </div>
-      </header>
-      <div className="container mx-auto px-4 py-10 max-w-lg">
+      <AppHeader />
+      <div className="container mx-auto px-4 py-8 max-w-lg">
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-[#d4af37] transition-colors mb-4"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t.summary.back}
+        </button>
         <h1 className="text-2xl font-serif font-bold text-[#0a0a0a] mb-2">{t.cancelBooking.pageTitle}</h1>
         <p className="text-muted-foreground text-sm mb-8">{t.cancelBooking.pageSubtitle}</p>
         <Card className="border-[#d4af37]/30 p-6">

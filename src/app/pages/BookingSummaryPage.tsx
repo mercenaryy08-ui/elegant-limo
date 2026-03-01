@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { useBooking } from '../contexts/BookingContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTranslations } from '../lib/translations';
+import { AppHeader } from '../components/AppHeader';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
@@ -171,14 +172,12 @@ export function BookingSummaryPage() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <header className="border-b border-[#d4af37]/20 bg-white sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+      <AppHeader />
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="mb-6">
           <h1 className="text-2xl font-serif text-[#0f172a]">{t.summary.pageTitle}</h1>
           <p className="text-sm text-slate-500">{t.summary.pageSubtitle}</p>
         </div>
-      </header>
-
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* 1. Trip details (editable From/To) */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
           <h2 className="text-xl font-serif font-bold mb-4 border-b pb-2">1. {t.summary.tripDetails}</h2>

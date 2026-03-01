@@ -11,6 +11,7 @@ import {
   Calendar,
   Clock,
   Users,
+  ArrowLeft,
   ArrowRight,
   Car,
   AlertCircle,
@@ -29,6 +30,7 @@ import { Separator } from '../components/ui/separator';
 import { Badge } from '../components/ui/badge';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { toast } from 'sonner';
+import { AppHeader } from '../components/AppHeader';
 import { getVehicleById } from '../lib/fleet';
 import { formatCHF, ADD_ONS, calculatePrice } from '../lib/pricing';
 import { generateInvoiceLineItems } from '../lib/policies';
@@ -300,25 +302,20 @@ export function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-[#d4af37]/20 bg-white/95 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <img src="/images/logoelegantlimo.png" alt="Elegant Limo" className="w-10 h-10 rounded-lg object-cover" />
-            <h1
-              className="text-2xl font-semibold tracking-tight text-[#0a0a0a] cursor-pointer"
-              onClick={() => navigate('/')}
-            >
-              Elegant Limo
-            </h1>
-          </div>
-        </div>
-      </header>
+      <AppHeader />
 
       <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
+            <button
+              type="button"
+              onClick={() => navigate('/summary')}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-[#d4af37] transition-colors mb-2"
+            >
+              <ArrowLeft className="w-4 h-4" aria-hidden />
+              {t.summary.back}
+            </button>
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-[#0a0a0a] mb-2">
                 {t.checkout.title}
