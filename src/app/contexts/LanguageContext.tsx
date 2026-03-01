@@ -10,17 +10,20 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+/** Default language when none is stored. */
+const DEFAULT_LANGUAGE: Language = 'en';
+
 function readLanguage(): Language {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') return DEFAULT_LANGUAGE;
   try {
     const s = localStorage.getItem(STORAGE_KEY);
     if (s === 'en' || s === 'al' || s === 'de') return s;
   } catch {}
-  return 'en';
+  return DEFAULT_LANGUAGE;
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>(DEFAULT_LANGUAGE);
 
   useEffect(() => {
     setLanguageState(readLanguage());

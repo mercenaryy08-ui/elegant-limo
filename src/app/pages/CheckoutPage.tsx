@@ -53,6 +53,10 @@ export function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const {
     register,
     handleSubmit,
