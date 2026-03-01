@@ -216,12 +216,12 @@ export function CheckoutPage() {
       ];
 
   const BookingSummaryCard = () => (
-    <Card className="border-[#d4af37]/30 bg-gradient-to-br from-white to-[#fafafa] shadow-lg sticky top-24">
+    <Card className="border-[#d4af37]/30 bg-card shadow-lg sticky top-24">
       <div className="h-1 bg-gradient-to-r from-[#b8941f] via-[#d4af37] to-[#b8941f]" />
       <div className="p-6 space-y-6">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-[#d4af37]" />
-                  <h3 className="text-xl font-semibold text-[#0a0a0a]">{t.checkout.bookingSummary}</h3>
+                  <h3 className="text-xl font-semibold text-foreground">{t.checkout.bookingSummary}</h3>
                 </div>
 
         <div className="space-y-4">
@@ -230,7 +230,7 @@ export function CheckoutPage() {
             <Car className="w-4 h-4 text-[#d4af37] mt-1 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-xs text-muted-foreground">{t.checkout.vehicleLabel}</p>
-              <p className="text-sm font-medium text-[#0a0a0a]">
+              <p className="text-sm font-medium text-foreground">
                 {vehicle.name} ({vehicle.className})
               </p>
             </div>
@@ -242,11 +242,11 @@ export function CheckoutPage() {
             <div className="flex-1 space-y-2">
               <div>
                 <p className="text-xs text-muted-foreground">From</p>
-                <p className="text-sm font-medium text-[#0a0a0a]">{bookingData.from}</p>
+                <p className="text-sm font-medium text-foreground">{bookingData.from}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t.checkout.toLabel}</p>
-                <p className="text-sm font-medium text-[#0a0a0a]">{bookingData.to}</p>
+                <p className="text-sm font-medium text-foreground">{bookingData.to}</p>
               </div>
             </div>
           </div>
@@ -257,17 +257,17 @@ export function CheckoutPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm">
               <Calendar className="w-4 h-4 text-[#d4af37]" />
-              <span className="text-[#0a0a0a]">
+              <span className="text-foreground">
                 {bookingData.date && format(new Date(bookingData.date), 'PPP')}
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <Clock className="w-4 h-4 text-[#d4af37]" />
-              <span className="text-[#0a0a0a]">{bookingData.time}</span>
+              <span className="text-foreground">{bookingData.time}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <Users className="w-4 h-4 text-[#d4af37]" />
-              <span className="text-[#0a0a0a]">
+              <span className="text-foreground">
                 {bookingData.passengers} {bookingData.passengers === 1 ? t.common.passenger : t.common.passengers}
               </span>
             </div>
@@ -282,12 +282,12 @@ export function CheckoutPage() {
                 {item.type === 'total' && <Separator className="bg-[#d4af37]/20 my-2" />}
                 <div className="flex justify-between items-center">
                   <span
-                    className={`text-sm ${item.type === 'total' ? 'font-semibold text-[#0a0a0a]' : 'text-muted-foreground'}`}
+                    className={`text-sm ${item.type === 'total' ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}
                   >
                     {item.type === 'total' ? t.checkout.invoiceTotal : item.description}
                   </span>
                   <span
-                    className={`${item.type === 'total' ? 'text-xl font-bold text-[#d4af37]' : 'text-sm font-medium text-[#0a0a0a]'}`}
+                    className={`${item.type === 'total' ? 'text-xl font-bold text-[#d4af37]' : 'text-sm font-medium text-foreground'}`}
                   >
                     {formatCHF(item.amount)}
                   </span>
@@ -317,7 +317,7 @@ export function CheckoutPage() {
               {t.summary.back}
             </button>
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#0a0a0a] mb-2">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
                 {t.checkout.title}
               </h2>
               <p className="text-muted-foreground">{t.checkout.justDetails}</p>
@@ -329,7 +329,7 @@ export function CheckoutPage() {
                 <div className="p-6 space-y-6">
                   <div className="flex items-center gap-2">
                     <User className="w-5 h-5 text-[#d4af37]" />
-                    <h3 className="text-xl font-semibold text-[#0a0a0a]">{t.checkout.customerDetails}</h3>
+                    <h3 className="text-xl font-semibold text-foreground">{t.checkout.customerDetails}</h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -343,7 +343,7 @@ export function CheckoutPage() {
                         {...register('firstName', {
                           validate: (v) => (v != null && String(v).trim() !== '') || t.checkout.firstNameRequired,
                         })}
-                        className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
+                        className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-muted"
                         aria-invalid={errors.firstName ? 'true' : 'false'}
                       />
                       {errors.firstName && (
@@ -363,7 +363,7 @@ export function CheckoutPage() {
                         {...register('lastName', {
                           validate: (v) => (v != null && String(v).trim() !== '') || t.checkout.lastNameRequired,
                         })}
-                        className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
+                        className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-muted"
                         aria-invalid={errors.lastName ? 'true' : 'false'}
                       />
                       {errors.lastName && (
@@ -393,7 +393,7 @@ export function CheckoutPage() {
                           return true;
                         },
                       })}
-                      className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
+                      className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-muted"
                       aria-invalid={errors.email ? 'true' : 'false'}
                     />
                     {errors.email && (
@@ -417,7 +417,7 @@ export function CheckoutPage() {
                       {...register('phone', {
                         validate: (v) => (v != null && String(v).trim() !== '') || t.checkout.phoneRequired,
                       })}
-                      className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
+                      className="h-12 border-[#d4af37]/30 focus:border-[#d4af37] bg-muted"
                       aria-invalid={errors.phone ? 'true' : 'false'}
                     />
                     {errors.phone && (
@@ -434,7 +434,7 @@ export function CheckoutPage() {
                       id="specialRequests"
                       placeholder={t.checkout.placeholderSpecialRequests}
                       {...register('specialRequests')}
-                      className="min-h-24 border-[#d4af37]/30 focus:border-[#d4af37] bg-[#fafafa]"
+                      className="min-h-24 border-[#d4af37]/30 focus:border-[#d4af37] bg-muted"
                       rows={3}
                     />
                   </div>
@@ -444,13 +444,13 @@ export function CheckoutPage() {
               {/* Add-ons (e.g. VIP) */}
               <Card className="border-[#d4af37]/30">
                 <div className="p-6 space-y-4">
-                  <h3 className="text-xl font-semibold text-[#0a0a0a]">{t.checkout.addOns}</h3>
+                  <h3 className="text-xl font-semibold text-foreground">{t.checkout.addOns}</h3>
                   {ADD_ONS.map((addon) => {
                     const checked = selectedAddOns.includes(addon.id);
                     return (
                       <label
                         key={addon.id}
-                        className="flex items-start gap-3 cursor-pointer rounded-lg border border-[#d4af37]/30 p-4 hover:bg-[#f4e4b7]/10"
+                        className="flex items-start gap-3 cursor-pointer rounded-lg border border-[#d4af37]/30 p-4 hover:bg-accent/50"
                       >
                         <Checkbox
                           checked={checked}
@@ -461,7 +461,7 @@ export function CheckoutPage() {
                           className="border-[#d4af37] data-[state=checked]:bg-[#d4af37] mt-0.5"
                         />
                         <div>
-                          <span className="font-medium text-[#0a0a0a]">
+                          <span className="font-medium text-foreground">
                             {addon.id === 'vip-meet-inside' ? t.checkout.addOnVipName : addon.name}
                           </span>
                           <span className="ml-2 text-[#d4af37] font-semibold">{formatCHF(addon.price)}</span>
@@ -480,12 +480,12 @@ export function CheckoutPage() {
                 <div className="p-6 space-y-4">
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-[#d4af37]" />
-                    <h3 className="text-xl font-semibold text-[#0a0a0a]">{t.checkout.payment}</h3>
+                    <h3 className="text-xl font-semibold text-foreground">{t.checkout.payment}</h3>
                   </div>
 
-                  <Alert className="border-[#d4af37]/30 bg-[#f4e4b7]/10">
+                  <Alert className="border-[#d4af37]/30 bg-accent/30">
                     <AlertCircle className="h-4 w-4 text-[#d4af37]" />
-                    <AlertDescription className="text-[#0a0a0a]">
+                    <AlertDescription className="text-foreground">
                       <div className="space-y-2">
                         <p className="font-semibold">{t.checkout.payStripe}</p>
                         <p className="text-sm">{t.checkout.payStripeDesc}</p>
@@ -506,9 +506,9 @@ export function CheckoutPage() {
               </Card>
 
               {/* Cancellation Policy */}
-              <Card className="border-[#d4af37]/30 bg-[#fafafa]">
+              <Card className="border-[#d4af37]/30 bg-muted/50">
                 <div className="p-6 space-y-4">
-                  <h4 className="font-semibold text-[#0a0a0a]">{t.cancellationPolicy.title}</h4>
+                  <h4 className="font-semibold text-foreground">{t.cancellationPolicy.title}</h4>
                   <p className="text-sm text-muted-foreground">{t.cancellationPolicy.summary}</p>
                   <ul className="text-sm text-muted-foreground space-y-1.5">
                     {[
@@ -536,7 +536,7 @@ export function CheckoutPage() {
                     />
                     <label
                       htmlFor="cancellation"
-                      className="text-sm text-[#0a0a0a] cursor-pointer leading-relaxed"
+                      className="text-sm text-foreground cursor-pointer leading-relaxed"
                     >
                       {t.checkout.cancellationLabel}
                     </label>
@@ -545,7 +545,7 @@ export function CheckoutPage() {
               </Card>
 
               {/* Terms and Conditions */}
-              <Card className="border-[#d4af37]/30 bg-[#fafafa]">
+              <Card className="border-[#d4af37]/30 bg-muted/50">
                 <div className="p-6 space-y-4">
                   <div className="flex items-start gap-3">
                     <Checkbox
@@ -558,7 +558,7 @@ export function CheckoutPage() {
                     />
                     <label
                       htmlFor="terms"
-                      className="text-sm text-[#0a0a0a] cursor-pointer leading-relaxed"
+                      className="text-sm text-foreground cursor-pointer leading-relaxed"
                     >
                       {t.checkout.termsAndPrivacy}
                     </label>

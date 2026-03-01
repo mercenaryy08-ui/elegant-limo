@@ -29,7 +29,7 @@ export function AppHeader({ onLogoClick }: AppHeaderProps) {
   if (isOps) return null;
 
   return (
-    <header className="border-b border-[#d4af37]/20 bg-white/95 backdrop-blur-sm sticky top-0 z-50">
+    <header className="border-b border-[#d4af37]/20 bg-background/95 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 md:py-6">
         <div className="flex items-center justify-between gap-4">
           <button
@@ -39,7 +39,7 @@ export function AppHeader({ onLogoClick }: AppHeaderProps) {
             aria-label="Elegant Limo"
           >
             <img src="/images/logoelegantlimo.png" alt="Elegant Limo" className="w-10 h-10 rounded-lg object-cover shrink-0" />
-            <h1 className="text-xl md:text-3xl font-semibold tracking-tight text-[#0a0a0a] dark:text-foreground truncate">
+            <h1 className="text-xl md:text-3xl font-semibold tracking-tight text-foreground truncate">
               Elegant Limo
             </h1>
           </button>

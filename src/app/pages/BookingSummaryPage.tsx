@@ -171,19 +171,19 @@ export function BookingSummaryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-background">
       <AppHeader />
       <div className="container mx-auto px-4 py-6 max-w-6xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-serif text-[#0f172a]">{t.summary.pageTitle}</h1>
-          <p className="text-sm text-slate-500">{t.summary.pageSubtitle}</p>
+          <h1 className="text-2xl font-serif text-foreground">{t.summary.pageTitle}</h1>
+          <p className="text-sm text-muted-foreground">{t.summary.pageSubtitle}</p>
         </div>
         {/* 1. Trip details (editable From/To) */}
-        <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-          <h2 className="text-xl font-serif font-bold mb-4 border-b pb-2">1. {t.summary.tripDetails}</h2>
+        <section className="bg-card rounded-xl shadow-sm border border-border p-6 mb-6">
+          <h2 className="text-xl font-serif font-bold mb-4 border-b border-border pb-2 text-foreground">1. {t.summary.tripDetails}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
-              <Label className="text-xs font-bold uppercase text-gray-500">{t.summary.pickup}</Label>
+              <Label className="text-xs font-bold uppercase text-muted-foreground">{t.summary.pickup}</Label>
               <AddressAutocomplete
                 id="summary-from"
                 value={bookingData.from}
@@ -196,7 +196,7 @@ export function BookingSummaryPage() {
               />
             </div>
             <div>
-              <Label className="text-xs font-bold uppercase text-gray-500">{t.summary.dropoff}</Label>
+              <Label className="text-xs font-bold uppercase text-muted-foreground">{t.summary.dropoff}</Label>
               <AddressAutocomplete
                 id="summary-to"
                 value={bookingData.to}
@@ -214,13 +214,13 @@ export function BookingSummaryPage() {
                 variant="outline"
                 onClick={recalculateRoute}
                 disabled={recalculating}
-                className="border-[#1e293b] text-[#1e293b] hover:bg-slate-100"
+                className="border-border text-foreground hover:bg-muted"
               >
                 {recalculating ? t.summary.calculating : t.summary.recalculate}
               </Button>
             </div>
           </div>
-          <div className="flex flex-wrap gap-4 text-sm text-slate-600">
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
             <span><strong>{t.summary.date}:</strong> {bookingData.date && format(new Date(bookingData.date), 'PPP')}</span>
             <span><strong>{t.summary.time}:</strong> {bookingData.time}</span>
             <span><strong>{t.summary.passengers}:</strong> {bookingData.passengers}</span>
@@ -229,7 +229,7 @@ export function BookingSummaryPage() {
 
         {/* Map + Route overview */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+          <div className="lg:col-span-2 bg-card p-2 rounded-xl shadow-sm border border-border">
             <BookingMap
               from={bookingData.fromLatLon ?? undefined}
               to={bookingData.toLatLon ?? undefined}
@@ -238,15 +238,15 @@ export function BookingSummaryPage() {
               className="w-full h-[320px] rounded-lg"
             />
           </div>
-          <div className="bg-[#0f172a] text-white p-6 rounded-xl flex flex-col justify-center">
+          <div className="bg-card border border-border p-6 rounded-xl flex flex-col justify-center">
             <h3 className="text-[#D4AF37] font-serif text-xl mb-4">{t.summary.routeOverview}</h3>
-            <div className="space-y-4 border-b border-gray-700 pb-3">
+            <div className="space-y-4 border-b border-border pb-3">
               <div className="flex justify-between">
-                <span className="text-gray-400 text-sm uppercase">{t.summary.distance}</span>
+                <span className="text-muted-foreground text-sm uppercase">{t.summary.distance}</span>
                 <span className="text-xl font-bold">{distance ? `${distance} km` : '––– km'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400 text-sm uppercase">{t.summary.estDuration}</span>
+                <span className="text-muted-foreground text-sm uppercase">{t.summary.estDuration}</span>
                 <span className="text-xl font-bold">
                   {duration ? `${Math.floor(duration / 60)}h ${duration % 60}m` : '––– min'}
                 </span>
@@ -254,7 +254,7 @@ export function BookingSummaryPage() {
             </div>
             {selectedVehicleId && vehiclePrices[selectedVehicleId] != null && (
               <div className="pt-4">
-                <span className="text-gray-400 text-sm uppercase block mb-1">{t.summary.estimatedPrice}</span>
+                <span className="text-muted-foreground text-sm uppercase block mb-1">{t.summary.estimatedPrice}</span>
                 <span className="text-4xl font-serif text-[#D4AF37]">
                   CHF {Math.round(vehiclePrices[selectedVehicleId])}
                 </span>
@@ -265,7 +265,7 @@ export function BookingSummaryPage() {
 
         {/* 2. Choose vehicle */}
         <section className="mb-8">
-          <h2 className="text-xl font-serif font-bold mb-4">2. {t.summary.chooseVehicle}</h2>
+          <h2 className="text-xl font-serif font-bold mb-4 text-foreground">2. {t.summary.chooseVehicle}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {VEHICLE_CARDS.map((card) => {
               const vehicle = getVehicleById(card.id);
@@ -276,8 +276,8 @@ export function BookingSummaryPage() {
                 <div
                   key={card.id}
                   onClick={() => canUse && setSelectedVehicleId(card.id)}
-                  className={`relative rounded-xl border-2 p-4 bg-white shadow-sm transition-all cursor-pointer ${
-                    selected ? 'border-[#d4af37] bg-[#fffdf5] shadow-lg' : 'border-transparent hover:border-[#d4af37]/50'
+                  className={`relative rounded-xl border-2 p-4 bg-card shadow-sm transition-all cursor-pointer ${
+                    selected ? 'border-[#d4af37] bg-accent shadow-lg' : 'border-transparent hover:border-[#d4af37]/50'
                   } ${!canUse ? 'opacity-60 pointer-events-none' : ''}`}
                 >
                   {card.popular && (
@@ -286,7 +286,7 @@ export function BookingSummaryPage() {
                     </div>
                   )}
                   {card.badgeKey && !card.popular && (
-                    <div className="absolute top-4 right-4 bg-gray-100 text-xs font-bold px-2 py-1 rounded">
+                    <div className="absolute top-4 right-4 bg-muted text-muted-foreground text-xs font-bold px-2 py-1 rounded">
                       {t.summary[card.badgeKey]}
                     </div>
                   )}
@@ -295,9 +295,9 @@ export function BookingSummaryPage() {
                     alt={card.title}
                     className="w-full h-40 object-cover rounded-lg mb-4"
                   />
-                  <h3 className="text-lg font-bold text-[#0a0a0a]">{card.title}</h3>
-                  <p className="text-gray-500 text-sm mb-2">{card.subtitle}</p>
-                  <ul className="text-xs text-gray-500 space-y-1 mb-4">
+                  <h3 className="text-lg font-bold text-foreground">{card.title}</h3>
+                  <p className="text-muted-foreground text-sm mb-2">{card.subtitle}</p>
+                  <ul className="text-xs text-muted-foreground space-y-1 mb-4">
                     {card.featureKeys.map((key, i) => (
                       <li key={i}>• {t.summary[key]}</li>
                     ))}
@@ -312,12 +312,12 @@ export function BookingSummaryPage() {
         </section>
 
         {/* Flight number (optional) */}
-        <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-          <h2 className="text-xl font-serif font-bold mb-4 border-b pb-2">
+        <section className="bg-card rounded-xl shadow-sm border border-border p-6 mb-8">
+          <h2 className="text-xl font-serif font-bold mb-4 border-b border-border pb-2 text-foreground">
             {t.summary.flightDetails}
           </h2>
           <div className="space-y-2 max-w-md">
-            <Label htmlFor="flightNumber" className="text-sm text-gray-700">
+            <Label htmlFor="flightNumber" className="text-sm text-foreground">
               {t.summary.flightNumberLabel}
             </Label>
             <Input
@@ -325,9 +325,9 @@ export function BookingSummaryPage() {
               placeholder={t.summary.flightNumberPlaceholder}
               value={bookingData.flightNumber ?? ''}
               onChange={(e) => updateBookingData({ flightNumber: e.target.value })}
-              className="h-11 border-[#d4af37]/30 focus:border-[#d4af37] focus:ring-[#d4af37] bg-[#fafafa]"
+              className="h-11 border-[#d4af37]/30 focus:border-[#d4af37] focus:ring-[#d4af37] bg-muted"
             />
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               {t.summary.flightNumberHint}
             </p>
           </div>
