@@ -41,10 +41,36 @@ function buildGoogleCalendarUrl(p) {
   const [h, m] = time.split(':').map((x) => parseInt(x, 10) || 0);
   const start = new Date(date + 'T' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':00');
   const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
-  const fmt = (x) => x.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
-  const text = encodeURIComponent('Elegant Limo: ' + (p.from || '') + ' → ' + (p.to || ''));
-  const details = encodeURIComponent('Booking ' + (p.bookingReference || '') + '. ' + (p.passengers ?? 1) + ' passenger(s).');
-  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + text + '&dates=' + fmt(start) + '/' + fmt(end) + '&details=' + details;
+  // Format as local time (no trailing Z) so Google shows the time as-entered in the user's calendar
+  const fmtLocal = (d) => {
+    const y = d.getFullYear().toString().padStart(4, '0');
+    const mo = (d.getMonth() + 1).toString().padStart(2, '0');
+    const da = d.getDate().toString().padStart(2, '0');
+    const hh = d.getHours().toString().padStart(2, '0');
+    const mm = d.getMinutes().toString().padStart(2, '0');
+    const ss = d.getSeconds().toString().padStart(2, '0');
+    return `${y}${mo}${da}T${hh}${mm}${ss}`;
+  };
+
+  const text = encodeURIComponent('Elegant Limo – Booking ' + (p.bookingReference || ''));
+  const lines = [
+    'From: ' + (p.from || ''),
+    'To: ' + (p.to || ''),
+    'Pickup: ' + (p.date || '') + ' ' + (p.time || '') + ' (Zurich local time)',
+    'Passengers: ' + String(p.passengers ?? 1),
+    'Vehicle: ' + (p.vehicleLabel || p.vehicleId || ''),
+    'Booking ID: ' + (p.bookingReference || ''),
+  ];
+  const details = encodeURIComponent(lines.join('\n'));
+  const location = encodeURIComponent(p.to || p.from || '');
+
+  return (
+    'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+    '&text=' + text +
+    '&dates=' + fmtLocal(start) + '/' + fmtLocal(end) +
+    '&details=' + details +
+    (location ? '&location=' + location : '')
+  );
 }
 
 function buildCustomerHtml(p, whatsappNumber) {

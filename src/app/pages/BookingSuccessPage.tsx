@@ -162,10 +162,29 @@ export function BookingSuccessPage() {
     const [h, m] = t.split(':').map((x) => parseInt(x, 10) || 0);
     const start = new Date(d + 'T' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':00');
     const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
-    const fmt = (x: Date) => x.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
-    const text = encodeURIComponent(`Elegant Limo: ${booking.from} → ${booking.to}`);
-    const details = encodeURIComponent(`Booking ${booking.bookingReference}. ${booking.passengers} passenger(s).`);
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${fmt(start)}/${fmt(end)}&details=${details}`;
+    const fmtLocal = (x: Date) => {
+      const y = x.getFullYear().toString().padStart(4, '0');
+      const mo = (x.getMonth() + 1).toString().padStart(2, '0');
+      const da = x.getDate().toString().padStart(2, '0');
+      const hh = x.getHours().toString().padStart(2, '0');
+      const mm = x.getMinutes().toString().padStart(2, '0');
+      const ss = x.getSeconds().toString().padStart(2, '0');
+      return `${y}${mo}${da}T${hh}${mm}${ss}`;
+    };
+    const text = encodeURIComponent(`Elegant Limo – Booking ${booking.bookingReference}`);
+    const lines = [
+      `From: ${booking.from}`,
+      `To: ${booking.to}`,
+      `Pickup: ${booking.date} ${booking.time} (Zurich local time)`,
+      `Passengers: ${booking.passengers}`,
+      `Vehicle: ${booking.vehicleLabel || booking.vehicleId}`,
+      `Booking ID: ${booking.bookingReference}`,
+    ];
+    const details = encodeURIComponent(lines.join('\n'));
+    const location = encodeURIComponent(booking.to || booking.from || '');
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${fmtLocal(start)}/${fmtLocal(end)}&details=${details}${
+      location ? `&location=${location}` : ''
+    }`;
   })();
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hi, I have a booking with Elegant Limo. My booking ID: ${booking.bookingReference}.`)}`;
 
