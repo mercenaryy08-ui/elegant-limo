@@ -55,6 +55,7 @@ function bookingToMetadata(p) {
     vehicleId: (p.vehicleId || '').slice(0, 500),
     vehicleLabel: (p.vehicleLabel || p.vehicleId || '').slice(0, 500),
     totalPrice: String(p.totalPrice ?? 0),
+    timezone: (p.timezone || 'Europe/Zurich').slice(0, 500),
     customerEmail: (p.customerEmail || '').slice(0, 500),
     customerPhone: (p.customerPhone || '').slice(0, 500),
     customerName: name.slice(0, 500),
@@ -138,7 +139,8 @@ export default async function handler(req, res) {
   const stripe = new Stripe(secretKey);
 
   const cancellationNote = 'Cancellation: free ≥24h before pickup; <24h before pickup: 50% cancellation fee applies.';
-  const routeDesc = `${(body.from || '').slice(0, 80)} → ${(body.to || '').slice(0, 80)} • ${body.date || ''} ${body.time || ''}`;
+  const tz = (body.timezone || 'Europe/Zurich');
+  const routeDesc = `${(body.from || '').slice(0, 80)} → ${(body.to || '').slice(0, 80)} • ${body.date || ''} ${body.time || ''} (${tz})`;
   const fullDescription = `${routeDesc}. ${cancellationNote}`.slice(0, 500);
 
   try {

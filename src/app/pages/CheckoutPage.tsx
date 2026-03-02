@@ -177,6 +177,7 @@ export function CheckoutPage() {
         to: bookingData.to,
         date: bookingData.date,
         time: bookingData.time,
+        timezone: 'Europe/Zurich',
         passengers: bookingData.passengers,
         vehicleId: bookingData.vehicleId!,
         vehicleLabel,
@@ -320,7 +321,10 @@ export function CheckoutPage() {
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-[#d4af37]" />
-              <span className="text-foreground">{bookingData.time}</span>
+              <span className="text-foreground">
+                {bookingData.time}{' '}
+                <span className="text-xs text-muted-foreground">(Zurich local time)</span>
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-[#d4af37]" />

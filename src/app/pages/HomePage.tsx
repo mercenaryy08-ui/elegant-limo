@@ -438,13 +438,16 @@ export function HomePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                      {[1, 2, 3, 4, 5, 6, 7].map((num) => (
                         <SelectItem key={num} value={num.toString()}>
                           {num} {num === 1 ? t.common.passenger : t.common.passengers}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Maximum {7} passengers per booking (Zurich local time and capacity).
+                  </p>
                 </div>
 
                 {/* Update (when dirty) + Book */}
