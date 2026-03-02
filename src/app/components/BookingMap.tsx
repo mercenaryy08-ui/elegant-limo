@@ -1,19 +1,10 @@
 import { useRef, useEffect } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import mapboxgl, { type LngLatBoundsLike, type Map as MapboxMap } from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import type { LatLon } from '../contexts/BookingContext';
 import { getMapboxAccessToken, getMapboxStyleId } from '../lib/mapbox-config';
 
 const SWISS_CENTER: [number, number] = [46.8182, 8.2275];
-const DEFAULT_ZOOM = 8;
-
-// Fix default marker icons in Leaflet when using bundlers
-delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
 
 interface BookingMapProps {
   background?: boolean;
@@ -33,57 +24,46 @@ export function BookingMap({
   className = '',
 }: BookingMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.Marker[]>([]);
-  const polylineRef = useRef<L.Polyline | null>(null);
+  const mapRef = useRef<MapboxMap | null>(null);
+  const routeSourceIdRef = useRef<string>('route');
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const map = L.map(containerRef.current, {
-      center: SWISS_CENTER,
-      zoom: DEFAULT_ZOOM,
-      zoomControl: !background,
-      dragging: !background,
-      scrollWheelZoom: !background,
-      doubleClickZoom: !background,
-    });
-
     const mapboxToken = getMapboxAccessToken();
     const mapboxStyleId = getMapboxStyleId();
 
-    if (mapboxToken) {
-      // Premium Mapbox light basemap (vector rendered as raster tiles for Leaflet)
-      L.tileLayer(
-        `https://api.mapbox.com/styles/v1/${mapboxStyleId}/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`,
-        {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors ' +
-            '&copy; <a href="https://www.mapbox.com/">Mapbox</a>',
-          tileSize: 512,
-          zoomOffset: -1,
-        }
-      ).addTo(map);
-    } else {
-      // Fallback: existing Carto light tiles if Mapbox is not configured
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-      }).addTo(map);
+    if (!mapboxToken) {
+      return;
     }
 
+    mapboxgl.accessToken = mapboxToken;
+
+    const map = new mapboxgl.Map({
+      container: containerRef.current,
+      style: `mapbox://styles/${mapboxStyleId}`,
+      center: [SWISS_CENTER[1], SWISS_CENTER[0]],
+      zoom: background ? 6.5 : 7.5,
+      projection: 'mercator',
+      attributionControl: true,
+      cooperativeGestures: true,
+    });
+
     if (background) {
-      map.dragging.disable();
-      map.touchZoom.disable();
+      map.scrollZoom.disable();
+      map.boxZoom.disable();
+      map.dragRotate.disable();
+      map.dragPan.disable();
+      map.keyboard.disable();
       map.doubleClickZoom.disable();
-      map.scrollWheelZoom.disable();
+      map.touchZoomRotate.disable();
     }
+
+    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-left');
 
     mapRef.current = map;
     return () => {
-      markersRef.current.forEach((m) => m.remove());
-      markersRef.current = [];
-      polylineRef.current?.remove();
-      map.remove();
+      mapRef.current?.remove();
       mapRef.current = null;
     };
   }, [background]);
@@ -92,58 +72,102 @@ export function BookingMap({
     const map = mapRef.current;
     if (!map) return;
 
-    markersRef.current.forEach((m) => m.remove());
-    markersRef.current = [];
-    polylineRef.current?.remove();
+    // Clear existing pins & route layers if any
+    const existingMarkers = (map as any)._elPins as mapboxgl.Marker[] | undefined;
+    existingMarkers?.forEach((m) => m.remove());
+    (map as any)._elPins = [];
 
-    const bounds: L.LatLngLiteral[] = [];
+    if (map.getLayer('route-highlight')) map.removeLayer('route-highlight');
+    if (map.getLayer('route-main')) map.removeLayer('route-main');
+    if (map.getLayer('route-casing')) map.removeLayer('route-casing');
+    if (map.getSource(routeSourceIdRef.current)) map.removeSource(routeSourceIdRef.current);
 
-    if (from) {
-      const m = L.marker([from.lat, from.lng]).addTo(map);
-      markersRef.current.push(m);
-      bounds.push({ lat: from.lat, lng: from.lng });
-    }
-    if (to) {
-      const m = L.marker([to.lat, to.lng]).addTo(map);
-      markersRef.current.push(m);
-      bounds.push({ lat: to.lat, lng: to.lng });
-    }
+    const pins: mapboxgl.Marker[] = [];
+    const bounds = new mapboxgl.LngLatBounds();
 
-    if (geoJson) {
-      // Use L.geoJSON for proper road geometry from OSRM
-      const layer = L.geoJSON(geoJson as GeoJSON.GeoJsonObject, {
-        style: { color: '#2563eb', weight: 5, opacity: 0.75 },
-      }).addTo(map);
-      polylineRef.current = layer as unknown as L.Polyline;
-      const gjBounds = layer.getBounds();
-      if (gjBounds.isValid()) {
-        bounds.push(gjBounds.getSouthWest(), gjBounds.getNorthEast());
+    const createPin = (latLon: LatLon, isDrop: boolean) => {
+      const el = document.createElement('div');
+      el.className = `pin${isDrop ? ' drop' : ''}`;
+      const marker = new mapboxgl.Marker({ element: el, anchor: 'center' }).setLngLat([
+        latLon.lng,
+        latLon.lat,
+      ]);
+      marker.addTo(map);
+      pins.push(marker);
+      bounds.extend([latLon.lng, latLon.lat]);
+    };
+
+    if (from) createPin(from, false);
+    if (to) createPin(to, true);
+
+    let lineGeometry: GeoJSON.LineString | null = null;
+
+    if (geoJson && typeof geoJson === 'object') {
+      const g = geoJson as any;
+      if (g.type === 'LineString') {
+        lineGeometry = g as GeoJSON.LineString;
+      } else if (g.type === 'Feature' && g.geometry?.type === 'LineString') {
+        lineGeometry = g.geometry as GeoJSON.LineString;
       }
     } else if (routePoints && routePoints.length >= 2) {
-      const latlngs: [number, number][] = routePoints.map((p) => [p.lat, p.lng]);
-      const poly = L.polyline(latlngs, {
-        color: '#d4af37',
-        weight: 4,
-        opacity: 0.9,
-      }).addTo(map);
-      polylineRef.current = poly;
-      latlngs.forEach((p) => bounds.push({ lat: p[0], lng: p[1] }));
-    } else if (from && to) {
-      const line = L.polyline(
-        [
-          [from.lat, from.lng],
-          [to.lat, to.lng],
-        ],
-        { color: '#d4af37', weight: 4, opacity: 0.9 }
-      ).addTo(map);
-      polylineRef.current = line;
-      bounds.push({ lat: from.lat, lng: from.lng }, { lat: to.lat, lng: to.lng });
+      lineGeometry = {
+        type: 'LineString',
+        coordinates: routePoints.map((p) => [p.lng, p.lat]),
+      };
     }
 
-    if (bounds.length >= 2) {
-      map.fitBounds(bounds as L.LatLngBoundsLiteral, { padding: [20, 20], maxZoom: 14 });
-    } else if (bounds.length === 1) {
-      map.setView(bounds[0], 12);
+    if (lineGeometry && lineGeometry.coordinates.length >= 2) {
+      const sourceId = routeSourceIdRef.current;
+      map.addSource(sourceId, {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          geometry: lineGeometry,
+          properties: {},
+        },
+      });
+
+      map.addLayer({
+        id: 'route-casing',
+        type: 'line',
+        source: sourceId,
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-width': 10,
+          'line-color': 'rgba(15,23,42,0.35)',
+        },
+      });
+
+      map.addLayer({
+        id: 'route-main',
+        type: 'line',
+        source: sourceId,
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-width': 6,
+          'line-color': '#2563eb',
+        },
+      });
+
+      map.addLayer({
+        id: 'route-highlight',
+        type: 'line',
+        source: sourceId,
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-width': 2,
+          'line-color': 'rgba(255,255,255,0.7)',
+        },
+      });
+
+      lineGeometry.coordinates.forEach((c) => bounds.extend(c as [number, number]));
+    }
+
+    (map as any)._elPins = pins;
+
+    if (!bounds.isEmpty()) {
+      const fit: LngLatBoundsLike = bounds;
+      map.fitBounds(fit, { padding: background ? 40 : 60, maxZoom: background ? 10 : 13 });
     }
   }, [from, to, routePoints, geoJson]);
 
