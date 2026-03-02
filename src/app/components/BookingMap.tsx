@@ -72,103 +72,112 @@ export function BookingMap({
     const map = mapRef.current;
     if (!map) return;
 
-    // Clear existing pins & route layers if any
-    const existingMarkers = (map as any)._elPins as mapboxgl.Marker[] | undefined;
-    existingMarkers?.forEach((m) => m.remove());
-    (map as any)._elPins = [];
+    const draw = () => {
+      // Clear existing pins & route layers if any
+      const existingMarkers = (map as any)._elPins as mapboxgl.Marker[] | undefined;
+      existingMarkers?.forEach((m) => m.remove());
+      (map as any)._elPins = [];
 
-    if (map.getLayer('route-highlight')) map.removeLayer('route-highlight');
-    if (map.getLayer('route-main')) map.removeLayer('route-main');
-    if (map.getLayer('route-casing')) map.removeLayer('route-casing');
-    if (map.getSource(routeSourceIdRef.current)) map.removeSource(routeSourceIdRef.current);
+      if (map.getLayer('route-highlight')) map.removeLayer('route-highlight');
+      if (map.getLayer('route-main')) map.removeLayer('route-main');
+      if (map.getLayer('route-casing')) map.removeLayer('route-casing');
+      if (map.getSource(routeSourceIdRef.current)) map.removeSource(routeSourceIdRef.current);
 
-    const pins: mapboxgl.Marker[] = [];
-    const bounds = new mapboxgl.LngLatBounds();
+      const pins: mapboxgl.Marker[] = [];
+      const bounds = new mapboxgl.LngLatBounds();
 
-    const createPin = (latLon: LatLon, isDrop: boolean) => {
-      const el = document.createElement('div');
-      el.className = `pin${isDrop ? ' drop' : ''}`;
-      const marker = new mapboxgl.Marker({ element: el, anchor: 'center' }).setLngLat([
-        latLon.lng,
-        latLon.lat,
-      ]);
-      marker.addTo(map);
-      pins.push(marker);
-      bounds.extend([latLon.lng, latLon.lat]);
+      const createPin = (latLon: LatLon, isDrop: boolean) => {
+        const el = document.createElement('div');
+        el.className = `pin${isDrop ? ' drop' : ''}`;
+        const marker = new mapboxgl.Marker({ element: el, anchor: 'center' }).setLngLat([
+          latLon.lng,
+          latLon.lat,
+        ]);
+        marker.addTo(map);
+        pins.push(marker);
+        bounds.extend([latLon.lng, latLon.lat]);
+      };
+
+      if (from) createPin(from, false);
+      if (to) createPin(to, true);
+
+      let lineGeometry: GeoJSON.LineString | null = null;
+
+      if (geoJson && typeof geoJson === 'object') {
+        const g = geoJson as any;
+        if (g.type === 'LineString') {
+          lineGeometry = g as GeoJSON.LineString;
+        } else if (g.type === 'Feature' && g.geometry?.type === 'LineString') {
+          lineGeometry = g.geometry as GeoJSON.LineString;
+        }
+      } else if (routePoints && routePoints.length >= 2) {
+        lineGeometry = {
+          type: 'LineString',
+          coordinates: routePoints.map((p) => [p.lng, p.lat]),
+        };
+      }
+
+      if (lineGeometry && lineGeometry.coordinates.length >= 2) {
+        const sourceId = routeSourceIdRef.current;
+        map.addSource(sourceId, {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            geometry: lineGeometry,
+            properties: {},
+          },
+        });
+
+        map.addLayer({
+          id: 'route-casing',
+          type: 'line',
+          source: sourceId,
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
+          paint: {
+            'line-width': 10,
+            'line-color': 'rgba(15,23,42,0.35)',
+          },
+        });
+
+        map.addLayer({
+          id: 'route-main',
+          type: 'line',
+          source: sourceId,
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
+          paint: {
+            'line-width': 6,
+            'line-color': '#2563eb',
+          },
+        });
+
+        map.addLayer({
+          id: 'route-highlight',
+          type: 'line',
+          source: sourceId,
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
+          paint: {
+            'line-width': 2,
+            'line-color': 'rgba(255,255,255,0.7)',
+          },
+        });
+
+        lineGeometry.coordinates.forEach((c) => bounds.extend(c as [number, number]));
+      }
+
+      (map as any)._elPins = pins;
+
+      if (!bounds.isEmpty()) {
+        const fit: LngLatBoundsLike = bounds;
+        map.fitBounds(fit, { padding: background ? 40 : 60, maxZoom: background ? 10 : 13 });
+      }
     };
 
-    if (from) createPin(from, false);
-    if (to) createPin(to, true);
-
-    let lineGeometry: GeoJSON.LineString | null = null;
-
-    if (geoJson && typeof geoJson === 'object') {
-      const g = geoJson as any;
-      if (g.type === 'LineString') {
-        lineGeometry = g as GeoJSON.LineString;
-      } else if (g.type === 'Feature' && g.geometry?.type === 'LineString') {
-        lineGeometry = g.geometry as GeoJSON.LineString;
-      }
-    } else if (routePoints && routePoints.length >= 2) {
-      lineGeometry = {
-        type: 'LineString',
-        coordinates: routePoints.map((p) => [p.lng, p.lat]),
-      };
+    if (!map.isStyleLoaded()) {
+      map.once('load', draw);
+      return;
     }
 
-    if (lineGeometry && lineGeometry.coordinates.length >= 2) {
-      const sourceId = routeSourceIdRef.current;
-      map.addSource(sourceId, {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: lineGeometry,
-          properties: {},
-        },
-      });
-
-      map.addLayer({
-        id: 'route-casing',
-        type: 'line',
-        source: sourceId,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-          'line-width': 10,
-          'line-color': 'rgba(15,23,42,0.35)',
-        },
-      });
-
-      map.addLayer({
-        id: 'route-main',
-        type: 'line',
-        source: sourceId,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-          'line-width': 6,
-          'line-color': '#2563eb',
-        },
-      });
-
-      map.addLayer({
-        id: 'route-highlight',
-        type: 'line',
-        source: sourceId,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-          'line-width': 2,
-          'line-color': 'rgba(255,255,255,0.7)',
-        },
-      });
-
-      lineGeometry.coordinates.forEach((c) => bounds.extend(c as [number, number]));
-    }
-
-    (map as any)._elPins = pins;
-
-    if (!bounds.isEmpty()) {
-      const fit: LngLatBoundsLike = bounds;
-      map.fitBounds(fit, { padding: background ? 40 : 60, maxZoom: background ? 10 : 13 });
-    }
+    draw();
   }, [from, to, routePoints, geoJson]);
 
   return (
