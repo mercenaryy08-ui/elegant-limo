@@ -13,7 +13,7 @@ This is a **production-ready** Swiss limousine booking platform with CHF pricing
 | Vehicle | Class | Capacity | Rate | Description |
 |---------|-------|----------|------|-------------|
 | **Standard** | Mercedes E-Class | 1-3 passengers | **4.20 CHF/km** | Elegant and comfortable |
-| **Premium** | Mercedes S-Class | 1-3 passengers | **5.00 CHF/km** | Ultimate luxury |
+| **Premium** | Mercedes EQS | 1-3 passengers | **5.00 CHF/km** | Ultimate electric luxury |
 | **Van** | Mercedes V-Class | 1-7 passengers | **4.50 CHF/km** | Spacious for groups |
 
 ### Overbooking Prevention

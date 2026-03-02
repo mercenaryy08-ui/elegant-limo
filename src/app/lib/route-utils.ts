@@ -1,3 +1,5 @@
+import { getMapboxAccessToken } from './mapbox-config';
+
 /**
  * Get distance (km) and duration (minutes) between two points.
  * Uses Google Directions API when available; otherwise fallback estimate.
@@ -23,6 +25,7 @@ export function estimateRouteFromLatLon(
 }
 
 const OSRM_BASE = 'https://router.project-osrm.org/route/v1/driving';
+const MAPBOX_DIRECTIONS_BASE = 'https://api.mapbox.com/directions/v5/mapbox/driving';
 
 /**
  * Fetch road route geometry and distance/duration from OSRM (free, no API key).
@@ -56,6 +59,58 @@ export function fetchOsrmRoute(
       const fallback = estimateRouteFromLatLon(from, to);
       return { ...fallback, routePoints: [from, to] };
     });
+}
+
+/**
+ * Preferred route fetcher:
+ * - Uses Mapbox Directions API when VITE_MAPBOX_ACCESS_TOKEN is set
+ * - Falls back to OSRM (and then simple haversine estimate) when Mapbox is unavailable
+ */
+export function fetchRoute(
+  from: { lat: number; lng: number },
+  to: { lat: number; lng: number }
+): Promise<RouteInfo> {
+  const token = getMapboxAccessToken();
+  if (!token) {
+    return fetchOsrmRoute(from, to);
+  }
+
+  const coords = `${from.lng},${from.lat};${to.lng},${to.lat}`;
+  const params = new URLSearchParams({
+    access_token: token,
+    alternatives: 'false',
+    geometries: 'geojson',
+    overview: 'full',
+  });
+  const url = `${MAPBOX_DIRECTIONS_BASE}/${coords}?${params.toString()}`;
+
+  return fetch(url)
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error('Mapbox directions request failed');
+      }
+      return res.json();
+    })
+    .then((data) => {
+      if (!data.routes || !data.routes[0]) {
+        throw new Error('Mapbox directions: no routes in response');
+      }
+      const route = data.routes[0];
+      const distanceKm = Math.round((route.distance / 1000) * 10) / 10;
+      const durationMinutes = Math.max(30, Math.ceil(route.duration / 60) + 15);
+      const coordinates: [number, number][] = route.geometry?.coordinates ?? [];
+      const routePoints =
+        coordinates.length > 0
+          ? coordinates.map((c) => ({ lng: c[0], lat: c[1] }))
+          : [from, to];
+      return {
+        distanceKm,
+        durationMinutes,
+        routePoints,
+        geoJson: route.geometry,
+      };
+    })
+    .catch(() => fetchOsrmRoute(from, to));
 }
 
 let directionsPromise: Promise<RouteInfo> | null = null;

@@ -14,7 +14,7 @@ import { AddressAutocomplete } from '../components/AddressAutocomplete';
 import { BookingMap } from '../components/BookingMap';
 import { getAvailableVehicles, getVehicleById } from '../lib/fleet';
 import { calculatePrice, formatCHF } from '../lib/pricing';
-import { fetchOsrmRoute } from '../lib/route-utils';
+import { fetchRoute } from '../lib/route-utils';
 import { geocodeAddress } from '../lib/nominatim';
 import { toast } from 'sonner';
 
@@ -33,8 +33,8 @@ const VEHICLE_CARDS = [
     badgeKey: null,
     popular: true,
     imageUrl: '/images/fleet/eclass.png',
-    title: 'Mercedes S-Class',
-    subtitle: 'First Class',
+    title: 'Mercedes EQS',
+    subtitle: 'First Class Electric',
     featureKeys: ['featureExecutiveComfort', 'featureExtraLegroom', 'feature3Suitcases'] as const,
   },
   {
@@ -97,7 +97,7 @@ export function BookingSummaryPage() {
   useEffect(() => {
     if (!fromLatLon || !toLatLon) return;
     let cancelled = false;
-    fetchOsrmRoute(fromLatLon, toLatLon).then((info) => {
+    fetchRoute(fromLatLon, toLatLon).then((info) => {
       if (cancelled) return;
       if (info.routePoints?.length) setRoutePoints(info.routePoints);
       if (info.geoJson) setRouteGeoJson(info.geoJson);
@@ -122,7 +122,7 @@ export function BookingSummaryPage() {
     }
     setRecalculating(true);
     try {
-      const info = await fetchOsrmRoute(bookingData.fromLatLon, bookingData.toLatLon);
+      const info = await fetchRoute(bookingData.fromLatLon, bookingData.toLatLon);
       setRoutePoints(info.routePoints ?? []);
       setRouteGeoJson(info.geoJson ?? null);
       updateBookingData({

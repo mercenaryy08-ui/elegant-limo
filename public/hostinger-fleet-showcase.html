@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signature Fleet Showcase</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: { 400: '#D4AF37', 500: '#C5A028', 600: '#B08D22', 300: '#E5C158' },
+                        dark: { 900: '#1f2937', 800: '#374151' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .showcase-transition { transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .vehicle-tab {
+            position: relative;
+            cursor: pointer;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease-in-out;
+            color: #1f2937;
+        }
+        .vehicle-tab:hover { background-color: #f3f4f6; }
+        .vehicle-tab:focus-visible { outline: 2px solid #C5A028; outline-offset: 2px; }
+        .vehicle-tab.active {
+            color: #C5A028;
+            background-color: #f9fafb;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        .vehicle-tab.active::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background-color: #C5A028;
+            border-radius: 0 4px 4px 0;
+        }
+        .premium-card {
+            transform: perspective(1000px) rotateY(0deg);
+            transition: transform 0.6s ease-out;
+        }
+        #preview-frame-wrapper { width: 90vw; max-width: 600px; }
+        @media (min-width: 768px) { #preview-frame-wrapper { width: 60vw; } }
+        .cta-link:focus-visible { outline: 2px solid #C5A028; outline-offset: 2px; }
+    </style>
+</head>
+<body class="bg-gray-100 antialiased font-sans text-dark-900">
+
+    <!-- Booking: booking.elegant-limo.ch | Main: elegant-limo.ch -->
+    <script>
+        window.BOOKING_APP_URL = 'https://booking.elegant-limo.ch';
+    </script>
+
+    <!-- Vehicle Image Preview Overlay -->
+    <div id="image-preview-overlay"
+         class="fixed inset-0 z-50 pointer-events-none opacity-0 transition-opacity duration-300 flex items-center justify-center"
+         role="dialog"
+         aria-modal="true"
+         aria-label="Vehicle image preview"
+         hidden>
+        <div id="preview-frame-wrapper"
+             class="relative bg-white rounded-xl shadow-2xl p-3 md:p-6 border-4 border-gold-500/50">
+            <button id="preview-close-btn"
+                    type="button"
+                    class="absolute -top-4 -right-4 bg-white rounded-full shadow-md w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold-500"
+                    aria-label="Close preview">
+                ✕
+            </button>
+            <div id="iframe-container"
+                 class="relative overflow-hidden rounded-lg border border-gray-300 shadow-inner"
+                 style="padding-top: 75%;">
+                <iframe id="vehicle-iframe"
+                        class="absolute inset-0 w-full h-full bg-gray-50"
+                        frameborder="0"
+                        loading="lazy"
+                        sandbox="allow-scripts"
+                        title="Vehicle preview">
+                </iframe>
+            </div>
+            <p id="preview-caption" class="text-xs text-center text-gray-600 mt-3 font-semibold"></p>
+        </div>
+    </div>
+
+    <!-- SIGNATURE FLEET SHOWCASE -->
+    <section id="premium-fleet" class="bg-white py-16 md:py-24 lg:py-32" aria-labelledby="fleet-heading">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <span class="inline-block text-xs font-semibold tracking-widest uppercase text-gold-500 mb-2">
+                    Our Signature Fleet
+                </span>
+                <h2 id="fleet-heading" class="font-serif text-4xl md:text-5xl text-dark-900 font-bold">
+                    Select Your Class of Travel
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <!-- Vehicle selector (tabs) -->
+                <div class="lg:col-span-1 space-y-4 p-4 bg-gray-50 rounded-xl shadow-inner" role="tablist" aria-label="Vehicle type">
+                    <button type="button" class="vehicle-tab active w-full text-left" data-vehicle="eclass" role="tab" aria-selected="true" aria-controls="vehicle-content-eclass" id="tab-eclass">
+                        <h4 class="font-serif text-xl font-bold">Mercedes-Benz E-Class</h4>
+                        <p class="text-sm text-gray-600">Executive Sedan</p>
+                    </button>
+                    <button type="button" class="vehicle-tab w-full text-left" data-vehicle="sclass" role="tab" aria-selected="false" aria-controls="vehicle-content-sclass" id="tab-sclass">
+                        <h4 class="font-serif text-xl font-bold">Mercedes-Benz EQS</h4>
+                        <p class="text-sm text-gray-600">First Class Electric</p>
+                    </button>
+                    <button type="button" class="vehicle-tab w-full text-left" data-vehicle="vclass" role="tab" aria-selected="false" aria-controls="vehicle-content-vclass" id="tab-vclass">
+                        <h4 class="font-serif text-xl font-bold">Mercedes-Benz V-Class</h4>
+                        <p class="text-sm text-gray-600">Luxury Van / Group</p>
+                    </button>
+                </div>
+
+                <!-- Display card -->
+                <div id="fleet-display" class="lg:col-span-2 bg-white p-8 rounded-xl shadow-xl premium-card text-dark-900 border border-gray-100">
+                    <div id="vehicle-content-eclass" class="showcase-transition" role="tabpanel" aria-labelledby="tab-eclass">
+                        <h3 class="font-serif text-4xl font-extrabold text-gold-600 mb-6">The E-Class Experience</h3>
+                        <div class="flex flex-wrap gap-8 mb-8">
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-6 h-6 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h-4a2 2 0 01-2-2V8a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2zM5 19v-1m0 0V8a2 2 0 012-2h4M5 19a2 2 0 002 2h10a2 2 0 002-2M5 19h14M8 15h.01M16 15h.01"></path></svg>
+                                <span class="text-lg font-semibold">3 Passengers</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-6 h-6 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7v10a2 2 0 01-2 2H6a2 2 0 01-2-2V7m16 0H4m16 0a2 2 0 00-2-2h-4V3a1 1 0 00-1-1h-4a1 1 0 00-1 1v2H6a2 2 0 00-2 2h16z"></path></svg>
+                                <span class="text-lg font-semibold">2 Large Bags</span>
+                            </div>
+                            <button type="button" class="preview-button flex items-center space-x-2 text-sm font-bold text-gray-500 hover:text-gold-600 transition duration-150 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold-500" data-vehicle-id="eclass" aria-label="Preview Mercedes-Benz E-Class image">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.552-2.276A1 1 0 0121 8.764v6.472a1 1 0 01-1.448.832L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                <span>Preview</span>
+                            </button>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed mb-6">
+                            The E-Class offers the perfect blend of luxury and efficiency. Ideal for high-stakes business meetings, airport transfers, and solo travelers requiring comfort and privacy.
+                        </p>
+                        <div class="border-l-4 border-gold-500 pl-4 py-2 bg-gray-100 rounded-r mb-8">
+                            <p class="text-sm font-light uppercase tracking-wider text-gray-500">Recommended for:</p>
+                            <p class="font-semibold text-lg text-dark-900">Business &amp; Solo Travellers</p>
+                        </div>
+                        <a href="https://booking.elegant-limo.ch"
+                           data-ref="fleet-eclass"
+                           target="_top"
+                           rel="noopener noreferrer"
+                           class="cta-link inline-flex items-center justify-center px-8 py-3 rounded-full text-lg font-bold bg-gradient-to-r from-gold-600 to-gold-400 text-white shadow-xl shadow-gold-500/40 hover:from-gold-500 hover:to-gold-300 hover:scale-[1.02] transition duration-300 uppercase tracking-widest">
+                            Book E-Class Now
+                        </a>
+                    </div>
+
+                    <div id="vehicle-content-sclass" class="showcase-transition hidden" role="tabpanel" aria-labelledby="tab-sclass">
+                        <h3 class="font-serif text-4xl font-extrabold text-gold-600 mb-6">The EQS Experience</h3>
+                        <div class="flex flex-wrap gap-8 mb-8">
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-6 h-6 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h-4a2 2 0 01-2-2V8a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2zM5 19v-1m0 0V8a2 2 0 012-2h4M5 19a2 2 0 002 2h10a2 2 0 002-2M5 19h14M8 15h.01M16 15h.01"></path></svg>
+                                <span class="text-lg font-semibold">3 Passengers</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-6 h-6 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7v10a2 2 0 01-2 2H6a2 2 0 01-2-2V7m16 0H4m16 0a2 2 0 00-2-2h-4V3a1 1 0 00-1-1h-4a1 1 0 00-1 1v2H6a2 2 0 00-2 2h16z"></path></svg>
+                                <span class="text-lg font-semibold">3 Large Bags</span>
+                            </div>
+                            <button type="button" class="preview-button flex items-center space-x-2 text-sm font-bold text-gray-500 hover:text-gold-600 transition duration-150 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold-500" data-vehicle-id="sclass" aria-label="Preview Mercedes-Benz S-Class image">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.552-2.276A1 1 0 0121 8.764v6.472a1 1 0 01-1.448.832L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                <span>Preview</span>
+                            </button>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed mb-6">
+                            The EQS represents the pinnacle of modern electric luxury. Hand-selected for VIPs and corporate executives who demand unparalleled comfort, silence, and a smooth zero-emission journey.
+                        </p>
+                        <div class="border-l-4 border-gold-500 pl-4 py-2 bg-gray-100 rounded-r mb-8">
+                            <p class="text-sm font-light uppercase tracking-wider text-gray-500">Recommended for:</p>
+                            <p class="font-semibold text-lg text-dark-900">VIP &amp; Executives</p>
+                        </div>
+                        <a href="https://booking.elegant-limo.ch"
+                           data-ref="fleet-sclass"
+                           target="_top"
+                           rel="noopener noreferrer"
+                           class="cta-link inline-flex items-center justify-center px-8 py-3 rounded-full text-lg font-bold bg-gradient-to-r from-gold-600 to-gold-400 text-white shadow-xl shadow-gold-500/40 hover:from-gold-500 hover:to-gold-300 hover:scale-[1.02] transition duration-300 uppercase tracking-widest">
+                            Book EQS Now
+                        </a>
+                    </div>
+
+                    <div id="vehicle-content-vclass" class="showcase-transition hidden" role="tabpanel" aria-labelledby="tab-vclass">
+                        <h3 class="font-serif text-4xl font-extrabold text-gold-600 mb-6">The V-Class Capacity</h3>
+                        <div class="flex flex-wrap gap-8 mb-8">
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-6 h-6 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h-4a2 2 0 01-2-2V8a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2zM5 19v-1m0 0V8a2 2 0 012-2h4M5 19a2 2 0 002 2h10a2 2 0 002-2M5 19h14M8 15h.01M16 15h.01"></path></svg>
+                                <span class="text-lg font-semibold">7 Passengers</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-6 h-6 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7v10a2 2 0 01-2 2H6a2 2 0 01-2-2V7m16 0H4m16 0a2 2 0 00-2-2h-4V3a1 1 0 00-1-1h-4a1 1 0 00-1 1v2H6a2 2 0 00-2 2h16z"></path></svg>
+                                <span class="text-lg font-semibold">7 Large Bags</span>
+                            </div>
+                            <button type="button" class="preview-button flex items-center space-x-2 text-sm font-bold text-gray-500 hover:text-gold-600 transition duration-150 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold-500" data-vehicle-id="vclass" aria-label="Preview Mercedes-Benz V-Class image">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.552-2.276A1 1 0 0121 8.764v6.472a1 1 0 01-1.448.832L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                <span>Preview</span>
+                            </button>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed mb-6">
+                            The V-Class is the ultimate choice for luxury group travel. It offers spacious, configurable seating and a discreet environment for families, small teams, or event transfers.
+                        </p>
+                        <div class="border-l-4 border-gold-500 pl-4 py-2 bg-gray-100 rounded-r mb-8">
+                            <p class="text-sm font-light uppercase tracking-wider text-gray-500">Recommended for:</p>
+                            <p class="font-semibold text-lg text-dark-900">Families &amp; Groups</p>
+                        </div>
+                        <a href="https://booking.elegant-limo.ch"
+                           data-ref="fleet-vclass"
+                           target="_top"
+                           rel="noopener noreferrer"
+                           class="cta-link inline-flex items-center justify-center px-8 py-3 rounded-full text-lg font-bold bg-gradient-to-r from-gold-600 to-gold-400 text-white shadow-xl shadow-gold-500/40 hover:from-gold-500 hover:to-gold-300 hover:scale-[1.02] transition duration-300 uppercase tracking-widest">
+                            Book V-Class Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        var vehicleData = {
+            eclass: { id: 'eclass', title: 'Mercedes-Benz E-Class', caption: 'Mercedes-Benz E-Class – vehicle interior / exterior view', imageUrl: 'https://assets.zyrosite.com/0B1b2Hs9k1Tamhoi/1-1UAxKICuNJ5t00FR.jpg', imgRatio: 1600 / 1200 },
+            sclass: { id: 'sclass', title: 'Mercedes-Benz EQS', caption: 'Mercedes-Benz EQS – vehicle interior / exterior view', imageUrl: 'https://assets.zyrosite.com/0B1b2Hs9k1Tamhoi/8-F4xzG4Z3SmAudVea.jpg', imgRatio: 1000 / 1600 },
+            vclass: { id: 'vclass', title: 'Mercedes-Benz V-Class', caption: 'Mercedes-Benz V-Class – vehicle interior / exterior view', imageUrl: 'https://assets.zyrosite.com/0B1b2Hs9k1Tamhoi/7-2rOvtUBp1KVR8X7H.jpg', imgRatio: 1200 / 1600 }
+        };
+
+        var tabs = document.querySelectorAll('.vehicle-tab');
+        var contentContainers = { eclass: document.getElementById('vehicle-content-eclass'), sclass: document.getElementById('vehicle-content-sclass'), vclass: document.getElementById('vehicle-content-vclass') };
+        var activeCard = document.getElementById('fleet-display');
+        var overlay = document.getElementById('image-preview-overlay');
+        var previewFrameContainer = document.getElementById('iframe-container');
+        var iframe = document.getElementById('vehicle-iframe');
+        var previewButtons = document.querySelectorAll('.preview-button');
+        var previewCaption = document.getElementById('preview-caption');
+        var previewCloseBtn = document.getElementById('preview-close-btn');
+
+        // Optional: make CTA hrefs use BOOKING_APP_URL + ref for analytics
+        (function setCtaHrefs() {
+            var base = window.BOOKING_APP_URL || 'https://booking.elegant-limo.ch';
+            document.querySelectorAll('a[data-ref]').forEach(function(a) {
+                var ref = a.getAttribute('data-ref');
+                a.setAttribute('href', ref ? base + '?ref=' + ref : base);
+            });
+        })();
+
+        function iframeHtml(url) {
+            return '<!DOCTYPE html><html><head><style>body{margin:0;padding:0;background:#f9fafb;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui,sans-serif}img{display:block;max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.18)}</style></head><body><img src="' + url + '" alt="Vehicle Preview" /></body></html>';
+        }
+
+        function showPreview(vehicleId) {
+            var data = vehicleData[vehicleId];
+            if (!data) return;
+            previewFrameContainer.style.paddingTop = (data.imgRatio * 100).toFixed(2) + '%';
+            iframe.srcdoc = iframeHtml(data.imageUrl);
+            previewCaption.textContent = data.caption;
+            overlay.removeAttribute('hidden');
+            overlay.classList.remove('pointer-events-none', 'opacity-0');
+            overlay.classList.add('bg-black/40');
+            previewCloseBtn.focus();
+        }
+
+        function hidePreview() {
+            overlay.classList.add('pointer-events-none', 'opacity-0');
+            overlay.classList.remove('bg-black/40');
+            overlay.setAttribute('hidden', '');
+        }
+
+        previewButtons.forEach(function(btn) {
+            btn.addEventListener('click', function() { showPreview(btn.getAttribute('data-vehicle-id')); });
+        });
+        previewCloseBtn.addEventListener('click', function(e) { e.stopPropagation(); hidePreview(); });
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) hidePreview(); });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !overlay.classList.contains('opacity-0')) hidePreview();
+        });
+
+        function setActiveVehicle(vehicleId) {
+            tabs.forEach(function(tab) {
+                var isActive = tab.getAttribute('data-vehicle') === vehicleId;
+                tab.classList.toggle('active', isActive);
+                tab.setAttribute('aria-selected', isActive);
+            });
+            activeCard.style.transform = 'perspective(1000px) rotateY(-2deg) scale(0.99)';
+            setTimeout(function() {
+                [ 'eclass', 'sclass', 'vclass' ].forEach(function(id) {
+                    contentContainers[id].classList.toggle('hidden', id !== vehicleId);
+                });
+                activeCard.style.transform = 'perspective(1000px) rotateY(0deg) scale(1)';
+            }, 300);
+        }
+
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function() { setActiveVehicle(this.getAttribute('data-vehicle')); });
+        });
+    </script>
+</body>
+</html>

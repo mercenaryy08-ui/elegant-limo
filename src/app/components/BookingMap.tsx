@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { LatLon } from '../contexts/BookingContext';
+import { getMapboxAccessToken, getMapboxStyleId } from '../lib/mapbox-config';
 
 const SWISS_CENTER: [number, number] = [46.8182, 8.2275];
 const DEFAULT_ZOOM = 8;
@@ -48,9 +49,27 @@ export function BookingMap({
       doubleClickZoom: !background,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
-    }).addTo(map);
+    const mapboxToken = getMapboxAccessToken();
+    const mapboxStyleId = getMapboxStyleId();
+
+    if (mapboxToken) {
+      // Premium Mapbox light basemap (vector rendered as raster tiles for Leaflet)
+      L.tileLayer(
+        `https://api.mapbox.com/styles/v1/${mapboxStyleId}/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`,
+        {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors ' +
+            '&copy; <a href="https://www.mapbox.com/">Mapbox</a>',
+          tileSize: 512,
+          zoomOffset: -1,
+        }
+      ).addTo(map);
+    } else {
+      // Fallback: existing Carto light tiles if Mapbox is not configured
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+      }).addTo(map);
+    }
 
     if (background) {
       map.dragging.disable();

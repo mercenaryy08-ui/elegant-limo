@@ -36,7 +36,7 @@ Badge: "✓ Fixed-route pricing"
 ```
 From: "ZRH"
 To: "Zurich"
-Vehicle: Premium (S-Class)
+Vehicle: Premium (EQS)
 Passengers: 1
 Add-ons: VIP Meet Inside Airport
 ```
@@ -193,7 +193,7 @@ Passengers: 1
 
 **Expected Available Vehicles**:
 - ✅ Standard (E-Class) - Capacity: 1-3
-- ✅ Premium (S-Class) - Capacity: 1-3
+- ✅ Premium (EQS) - Capacity: 1-3
 - ✅ Van (V-Class) - Capacity: 1-7
 
 **Result**: All 3 vehicles shown

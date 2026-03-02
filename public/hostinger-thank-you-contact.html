@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Sent – Elegant Limo</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: { 400: '#D4AF37', 500: '#C5A028', 600: '#B08D22', 300: '#E5C158' },
+                        dark: { 900: '#0f172a', 800: '#1e293b' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased min-h-screen flex flex-col font-sans">
+
+    <div class="bg-dark-900 h-2 w-full" aria-hidden="true"></div>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-8 md:p-12 text-center animate-fade-in-up relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-400 to-transparent" aria-hidden="true"></div>
+
+            <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-50 mb-8" aria-hidden="true">
+                <svg class="h-10 w-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+
+            <h1 class="text-3xl md:text-4xl font-serif text-dark-900 mb-4">
+                Message sent
+            </h1>
+            <p class="text-gray-600 text-lg mb-8 font-light max-w-md mx-auto">
+                Thank you for getting in touch. We’ve received your inquiry and will reply to the email you provided as soon as possible.
+            </p>
+
+            <div class="bg-gray-50 border border-gray-100 rounded-lg p-4 mb-10 inline-block">
+                <span class="text-xs uppercase tracking-widest text-gray-400 font-semibold block mb-1">What’s next?</span>
+                <p class="text-sm text-gray-600">We aim to respond within 24 hours on business days. For urgent requests, contact us on WhatsApp.</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="https://elegant-limo.ch"
+                   class="inline-flex items-center justify-center px-8 py-3 bg-dark-900 hover:bg-black text-white rounded-lg font-medium transition shadow-lg hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold-500 focus-visible:outline-offset-2">
+                    Return to home
+                </a>
+                <a href="https://wa.me/38348263151?text=Hi%2C%20I%20just%20sent%20a%20message%20via%20the%20Elegant%20Limo%20website."
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="inline-flex items-center justify-center px-8 py-3 bg-white border border-gray-200 text-dark-900 hover:bg-gray-50 rounded-lg font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold-500 focus-visible:outline-offset-2">
+                    Contact us on WhatsApp
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-gray-400 text-xs">
+        &copy; <span id="year"></span> Elegant Limo Switzerland. All rights reserved.
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

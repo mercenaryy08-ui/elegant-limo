@@ -25,7 +25,7 @@ import {
 import { setOpsAuthenticated } from '../lib/ops-auth';
 import { useLanguage } from '../contexts/LanguageContext';
 import { toast } from 'sonner';
-import { fetchOsrmRoute } from '../lib/route-utils';
+import { fetchRoute } from '../lib/route-utils';
 import { geocodeAddress } from '../lib/nominatim';
 
 const OPS_PIN = '21220';
@@ -188,7 +188,7 @@ export function HomePage() {
       return;
     }
     let cancelled = false;
-    fetchOsrmRoute(from, to).then((info) => {
+    fetchRoute(from, to).then((info) => {
       if (cancelled) return;
       if (info.routePoints?.length) setRoutePoints(info.routePoints);
       if (info.geoJson) setRouteGeoJson(info.geoJson);

@@ -4,7 +4,7 @@
 
 ```
 Standard (E-Class)  →  4.20 CHF/km  (1-3 pax)
-Premium (S-Class)   →  5.00 CHF/km  (1-3 pax)
+Premium (EQS Class) →  5.00 CHF/km  (1-3 pax)
 Van (V-Class)       →  4.50 CHF/km  (1-7 pax)
 ```
 

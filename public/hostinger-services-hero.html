@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Bespoke Chauffeur Services</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: { 400: '#D4AF37', 500: '#C5A028', 600: '#B08D22', 300: '#E5C158' },
+                        dark: { 900: '#0f172a', 800: '#1e293b' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased">
+
+    <!-- SERVICES HERO - Hostinger embed: link CTAs to your booking app + same-page anchor -->
+    <!-- Booking app: booking.elegant-limo.ch | Main site: elegant-limo.ch -->
+    <section id="services-hero" class="relative bg-gray-50">
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-gold-400 to-transparent"></div>
+
+        <div class="max-w-6xl mx-auto px-4 py-16 md:py-20 lg:py-24 flex flex-col md:flex-row md:items-center gap-10">
+            <!-- Left: Text -->
+            <div class="flex-1">
+                <span class="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.22em] uppercase text-gold-500 mb-4">
+                    <span class="w-2 h-2 rounded-full bg-gold-500 shadow-[0_0_12px_rgba(212,175,55,0.6)]"></span>
+                    Elegant Limo Switzerland
+                </span>
+
+                <h1 class="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[40px] text-dark-900 leading-tight mb-4">
+                    Chauffeur services tailored
+                    <span class="italic text-gold-500">to your Swiss journey.</span>
+                </h1>
+
+                <p class="text-sm sm:text-base text-gray-600 max-w-xl mb-6">
+                    Airport pickups, business roadshows, ski resort transfers and private events:
+                    discreet, punctual and comfortable rides across Switzerland.
+                </p>
+
+                <!-- Quick bullets -->
+                <div class="flex flex-wrap gap-3 mb-8">
+                    <div class="flex items-center text-xs sm:text-sm text-gray-600">
+                        <span class="w-1.5 h-1.5 rounded-full bg-gold-500 mr-2"></span>
+                        24/7 service on request
+                    </div>
+                    <div class="flex items-center text-xs sm:text-sm text-gray-600">
+                        <span class="w-1.5 h-1.5 rounded-full bg-gold-500 mr-2"></span>
+                        English-speaking chauffeurs
+                    </div>
+                    <div class="flex items-center text-xs sm:text-sm text-gray-600">
+                        <span class="w-1.5 h-1.5 rounded-full bg-gold-500 mr-2"></span>
+                        Fixed price confirmed by email
+                    </div>
+                </div>
+
+                <!-- CTAs -->
+                <div class="flex flex-wrap gap-3">
+                    <!-- Primary: to booking app (Vercel or your domain) for instant estimate / book -->
+                    <a href="https://booking.elegant-limo.ch"
+                       target="_top"
+                       rel="noopener noreferrer"
+                       class="inline-flex items-center justify-center px-6 py-3 rounded-full text-sm font-semibold
+                              bg-gradient-to-r from-gold-600 to-gold-400 text-white shadow-lg shadow-gold-500/30
+                              hover:from-gold-500 hover:to-gold-300 hover:-translate-y-0.5 transition">
+                        Get an instant estimate
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </a>
+
+                    <!-- Secondary: scroll to services section on same page (when embedded on Hostinger services page) -->
+                    <a href="#comprehensive-chauffeur-solutions"
+                       target="_self"
+                       class="inline-flex items-center justify-center px-5 py-3 rounded-full text-sm font-medium
+                              border border-gray-300 text-dark-800 bg-white hover:bg-gray-50 hover:border-gold-400
+                              transition">
+                        View all services
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right: Highlight card -->
+            <div class="flex-1 max-w-md md:max-w-sm lg:max-w-md mx-auto md:mx-0">
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-5 sm:p-6">
+                    <p class="text-xs font-semibold tracking-[0.2em] text-gray-400 uppercase mb-3">
+                        Popular combinations
+                    </p>
+                    <div class="space-y-3 text-sm text-gray-700">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-semibold">Airport Transfers</p>
+                                <p class="text-xs text-gray-500">Zurich · Geneva · Basel</p>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Meet &amp; Greet</span>
+                        </div>
+                        <hr class="border-dashed border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-semibold">Alps &amp; Ski Resorts</p>
+                                <p class="text-xs text-gray-500">St. Moritz · Davos · Verbier</p>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Winter-ready fleet</span>
+                        </div>
+                        <hr class="border-dashed border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-semibold">Business &amp; Events</p>
+                                <p class="text-xs text-gray-500">Roadshows, meetings, VIP guests</p>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Discreet &amp; punctual</span>
+                        </div>
+                    </div>
+                    <p class="mt-5 text-[11px] text-gray-400">
+                        Enter your route, choose a vehicle and receive a fixed offer by email. Book and pay online.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

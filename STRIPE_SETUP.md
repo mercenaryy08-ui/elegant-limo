@@ -56,11 +56,13 @@ If `RECAPTCHA_SECRET_KEY` is not set, the API skips verification (useful for loc
 
 ### Frontend (optional for current flow)
 
+This app is built with **Vite**, not Next.js. Only **`VITE_`**-prefixed variables are available in the browser. Do **not** use `NEXT_PUBLIC_*` — the frontend will not see them.
+
 The current flow does **not** use a frontend Stripe key: the frontend only calls your API `POST /api/create-stripe-checkout-session` and redirects to the returned URL. If you later add Stripe.js (e.g. Payment Element), you would set:
 
 | Variable | Value |
 |----------|--------|
-| `VITE_STRIPE_PUBLIC_KEY` | `pk_live_...` (Live publishable key) |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | `pk_live_...` (Live publishable key; only if you add Stripe.js / Payment Element later) |
 
 ---
 
