@@ -36,6 +36,8 @@ import { Breadcrumb } from '../components/Breadcrumb';
 import { getVehicleById } from '../lib/fleet';
 import { formatCHF, ADD_ONS, calculatePrice } from '../lib/pricing';
 import { generateInvoiceLineItems } from '../lib/policies';
+import { BookingMap } from '../components/BookingMap';
+import { fetchRoute } from '../lib/route-utils';
 
 const getApiBase = () => (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_API_BASE_URL ?? '';
 const getRecaptchaSiteKey = () => (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_RECAPTCHA_SITE_KEY ?? '';
@@ -61,9 +63,37 @@ export function CheckoutPage() {
   const recaptchaRef = useRef<ReCAPTCHA | null>(null);
   const recaptchaSiteKey = getRecaptchaSiteKey();
 
+  const [routePoints, setRoutePoints] = useState<{ lat: number; lng: number }[]>([]);
+  const [routeGeoJson, setRouteGeoJson] = useState<unknown>(null);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    const from = bookingData.fromLatLon;
+    const to = bookingData.toLatLon;
+    if (!from || !to) {
+      setRoutePoints([]);
+      setRouteGeoJson(null);
+      return;
+    }
+    let cancelled = false;
+    fetchRoute(from, to).then((info) => {
+      if (cancelled) return;
+      if (info.routePoints?.length) setRoutePoints(info.routePoints);
+      if (info.geoJson) setRouteGeoJson(info.geoJson);
+      if (!bookingData.distance && info.distanceKm) {
+        updateBookingData({
+          distance: info.distanceKm,
+          estimatedDuration: info.durationMinutes,
+        });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [bookingData.fromLatLon, bookingData.toLatLon, bookingData.distance, updateBookingData]);
 
   const {
     register,
@@ -234,29 +264,29 @@ export function CheckoutPage() {
     <Card className="border-[#d4af37]/30 bg-card shadow-lg sticky top-24">
       <div className="h-1 bg-gradient-to-r from-[#b8941f] via-[#d4af37] to-[#b8941f]" />
       <div className="p-6 space-y-6">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-[#d4af37]" />
-                  <h3 className="text-xl font-semibold text-foreground">{t.checkout.bookingSummary}</h3>
-                </div>
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5 text-[#d4af37]" />
+          <h3 className="text-xl font-semibold text-foreground">{t.checkout.bookingSummary}</h3>
+        </div>
+
+        {/* Map */}
+        <div className="rounded-lg overflow-hidden border border-[#d4af37]/20 bg-muted">
+          <BookingMap
+            from={bookingData.fromLatLon ?? undefined}
+            to={bookingData.toLatLon ?? undefined}
+            routePoints={routePoints.length >= 2 ? routePoints : undefined}
+            geoJson={routeGeoJson ?? undefined}
+            className="w-full h-[180px]"
+          />
+        </div>
 
         <div className="space-y-4">
-          {/* Vehicle */}
-          <div className="flex items-start gap-3">
-            <Car className="w-4 h-4 text-[#d4af37] mt-1 flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground">{t.checkout.vehicleLabel}</p>
-              <p className="text-sm font-medium text-foreground">
-                {vehicle.name} ({vehicle.className})
-              </p>
-            </div>
-          </div>
-
           {/* Route */}
           <div className="flex items-start gap-3">
             <MapPin className="w-4 h-4 text-[#d4af37] mt-1 flex-shrink-0" />
             <div className="flex-1 space-y-2">
               <div>
-                <p className="text-xs text-muted-foreground">From</p>
+                <p className="text-xs text-muted-foreground">{t.checkout.fromLabel}</p>
                 <p className="text-sm font-medium text-foreground">{bookingData.from}</p>
               </div>
               <div>
@@ -266,25 +296,37 @@ export function CheckoutPage() {
             </div>
           </div>
 
-          <Separator className="bg-[#d4af37]/20" />
-
           {/* Details */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
+          <div className="grid grid-cols-1 gap-2 text-sm">
+            <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-[#d4af37]" />
               <span className="text-foreground">
                 {bookingData.date && format(new Date(bookingData.date), 'PPP')}
               </span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-[#d4af37]" />
               <span className="text-foreground">{bookingData.time}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-[#d4af37]" />
               <span className="text-foreground">
-                {bookingData.passengers} {bookingData.passengers === 1 ? t.common.passenger : t.common.passengers}
+                {bookingData.passengers}{' '}
+                {bookingData.passengers === 1 ? t.common.passenger : t.common.passengers}
               </span>
+            </div>
+          </div>
+
+          <Separator className="bg-[#d4af37]/20" />
+
+          {/* Chosen vehicle */}
+          <div className="flex items-start gap-3">
+            <Car className="w-4 h-4 text-[#d4af37] mt-1 flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <p className="text-xs text-muted-foreground">{t.checkout.vehicleLabel}</p>
+              <p className="text-sm font-medium text-foreground">
+                {vehicle.name} ({vehicle.className})
+              </p>
             </div>
           </div>
 
