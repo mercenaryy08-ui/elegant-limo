@@ -129,6 +129,8 @@ ${p.cancellationSummary ? `<p><strong>Cancellation policy:</strong> ${escapeHtml
   <a href="${escapeHtml(whatsappUrl)}" style="display:inline-block;padding:10px 18px;background:#25D366;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">💬 Contact us on WhatsApp</a>
 </p>
 
+<p>Please add this trip to your calendar and set a reminder about 30 minutes before pickup so you have enough time for any last preparations.</p>
+
 For questions or changes, reply to this email or use the WhatsApp button above.
 
 Best regards,<br/>
