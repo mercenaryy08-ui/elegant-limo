@@ -50,7 +50,7 @@ function buildGoogleCalendarUrl(p) {
 function buildCustomerHtml(p, whatsappNumber) {
   const calendarUrl = buildGoogleCalendarUrl(p);
   const whatsappText = encodeURIComponent('Hi, I have a booking with Elegant Limo. My booking ID: ' + (p.bookingReference || '') + '.');
-  const whatsappUrl = 'https://wa.me/' + (whatsappNumber || '38348263151') + '?text=' + whatsappText;
+  const whatsappUrl = 'https://wa.me/' + (whatsappNumber || '41787495005') + '?text=' + whatsappText;
 
   const name = p.customerName || 'Customer';
   const body = `
@@ -143,7 +143,7 @@ export default async function handler(req, res) {
   const senderEmail = getEnv('BREVO_SENDER_EMAIL', DEFAULT_SENDER_EMAIL);
   const senderName = getEnv('BREVO_SENDER_NAME', DEFAULT_SENDER_NAME);
   const adminEmail = getEnv('ADMIN_EMAIL', DEFAULT_ADMIN_EMAIL);
-  const whatsappNumber = getEnv('WHATSAPP_NUMBER', '38348263151').replace(/\D/g, '');
+  const whatsappNumber = getEnv('WHATSAPP_NUMBER', '41787495005').replace(/\D/g, '');
   const sender = { name: senderName, email: senderEmail };
 
   const customerEmail = (body.customerEmail || '').trim();

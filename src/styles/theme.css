@@ -193,3 +193,23 @@
     line-height: 1.5;
   }
 }
+
+@layer components {
+  .pin {
+    width: 14px;
+    height: 14px;
+    border-radius: 9999px;
+    background: #0f172a;
+    border: 3px solid #ffffff;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.22);
+  }
+
+  .pin.drop {
+    background: #2563eb;
+  }
+
+  /* Hide "Improve this map" link in Mapbox attribution while keeping required credits */
+  .mapboxgl-ctrl-attrib a[href*="improve-this-map"] {
+    display: none !important;
+  }
+}

@@ -15,7 +15,7 @@ export function getMapboxAccessToken(): string {
 export function getMapboxStyleId(): string {
   return (
     (import.meta as unknown as { env: Record<string, string> }).env?.VITE_MAPBOX_STYLE_ID ||
-    'mapbox/light-v11'
+    'mapbox/standard'
   );
 }
 

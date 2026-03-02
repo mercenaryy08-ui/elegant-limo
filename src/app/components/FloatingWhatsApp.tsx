@@ -1,6 +1,8 @@
 import { MessageCircle } from 'lucide-react';
 
-const WHATSAPP_NUMBER = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_WHATSAPP_NUMBER || '38348263151';
+const WHATSAPP_NUMBER =
+  (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_WHATSAPP_NUMBER ||
+  '41787495005';
 const DEFAULT_MESSAGE = 'Hi, I\'d like to book a transfer with Elegant Limo.';
 
 export function FloatingWhatsApp() {
