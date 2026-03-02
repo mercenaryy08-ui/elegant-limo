@@ -280,6 +280,20 @@ export function CheckoutPage() {
           />
         </div>
 
+        {/* Distance & time */}
+        {(bookingData.distance || bookingData.estimatedDuration) && (
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground px-0.5">
+            <span>
+              {bookingData.estimatedDuration
+                ? `${Math.floor((bookingData.estimatedDuration ?? 0) / 60)}h ${(bookingData.estimatedDuration ?? 0) % 60}m`
+                : ''}
+            </span>
+            <span>
+              {bookingData.distance ? `${bookingData.distance} km` : ''}
+            </span>
+          </div>
+        )}
+
         <div className="space-y-4">
           {/* Route */}
           <div className="flex items-start gap-3">
@@ -324,9 +338,24 @@ export function CheckoutPage() {
             <Car className="w-4 h-4 text-[#d4af37] mt-1 flex-shrink-0" />
             <div className="flex-1 space-y-2">
               <p className="text-xs text-muted-foreground">{t.checkout.vehicleLabel}</p>
-              <p className="text-sm font-medium text-foreground">
-                {vehicle.name} ({vehicle.className})
-              </p>
+              <div className="flex items-center gap-3">
+                <img
+                  src={
+                    bookingData.vehicleId === 'vehicle-standard-eclass'
+                      ? '/images/fleet/eclass.png'
+                      : bookingData.vehicleId === 'vehicle-premium-sclass'
+                        ? '/images/fleet/mercedeseqs.png'
+                        : bookingData.vehicleId === 'vehicle-van-vclass'
+                          ? '/images/fleet/vclass.png'
+                          : '/images/fleet/eclass.png'
+                  }
+                  alt={vehicle.name}
+                  className="w-16 h-10 rounded-md object-cover border border-[#d4af37]/30"
+                />
+                <p className="text-sm font-medium text-foreground">
+                  {vehicle.name} ({vehicle.className})
+                </p>
+              </div>
             </div>
           </div>
 
