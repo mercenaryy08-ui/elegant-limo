@@ -201,7 +201,17 @@ export function VehicleSelectionPage() {
           {/* Vehicle Cards */}
           {availableVehicles.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {availableVehicles.map((vehicle) => (
+              {availableVehicles.map((vehicle) => {
+                const imageUrl =
+                  vehicle.id === 'vehicle-standard-eclass'
+                    ? '/images/fleet/eclass.png'
+                    : vehicle.id === 'vehicle-premium-sclass'
+                      ? '/images/fleet/mercedeseqs.png'
+                      : vehicle.id === 'vehicle-van-vclass'
+                        ? '/images/fleet/vclass.png'
+                        : null;
+
+                return (
                 <Card
                   key={vehicle.id}
                   className={`cursor-pointer transition-all duration-200 ${
@@ -225,10 +235,18 @@ export function VehicleSelectionPage() {
                       )}
                     </div>
 
-                    {/* Vehicle Image Placeholder */}
-                    <div className="w-full h-32 bg-gradient-to-br from-[#f5f5f5] to-[#fafafa] rounded-lg mb-4 flex items-center justify-center">
-                      <Car className="w-16 h-16 text-[#d4af37]" />
-                    </div>
+                    {/* Vehicle Image */}
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={vehicle.name}
+                        className="w-full h-32 object-cover rounded-lg mb-4"
+                      />
+                    ) : (
+                      <div className="w-full h-32 bg-gradient-to-br from-[#f5f5f5] to-[#fafafa] rounded-lg mb-4 flex items-center justify-center">
+                        <Car className="w-16 h-16 text-[#d4af37]" />
+                      </div>
+                    )}
 
                     {/* Capacity */}
                     <div className="flex items-center gap-2 mb-4">
@@ -277,7 +295,7 @@ export function VehicleSelectionPage() {
                     </div>
                   </div>
                 </Card>
-              ))}
+              )})}
             </div>
           )}
 

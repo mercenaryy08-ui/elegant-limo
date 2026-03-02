@@ -26,8 +26,8 @@ export const FLEET: Vehicle[] = [
   {
     id: 'vehicle-standard-eclass',
     type: VehicleType.STANDARD,
-    name: 'Standard',
-    className: 'Mercedes E-Class',
+    name: 'Mercedes E-Class',
+    className: 'E-Class',
     capacity: { min: 1, max: 3 },
     perKmRate: 4.20,
     description: 'Elegant and comfortable for up to 3 passengers',
@@ -36,8 +36,8 @@ export const FLEET: Vehicle[] = [
   {
     id: 'vehicle-premium-sclass',
     type: VehicleType.PREMIUM,
-    name: 'Premium',
-    className: 'Mercedes EQS',
+    name: 'Mercedes EQS',
+    className: 'EQS',
     capacity: { min: 1, max: 3 },
     perKmRate: 5.00,
     description: 'Ultimate electric luxury for up to 3 passengers',
@@ -46,8 +46,8 @@ export const FLEET: Vehicle[] = [
   {
     id: 'vehicle-van-vclass',
     type: VehicleType.VAN,
-    name: 'Van',
-    className: 'Mercedes V-Class',
+    name: 'Mercedes V-Class',
+    className: 'V-Class',
     capacity: { min: 1, max: 7 },
     perKmRate: 4.50,
     description: 'Spacious luxury for up to 7 passengers',
