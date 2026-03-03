@@ -120,6 +120,7 @@ export function HomePage() {
     const fromLon = params.get('fromLon');
     const toLat = params.get('toLat');
     const toLon = params.get('toLon');
+    const vehicleParam = params.get('vehicle')?.trim();
 
     const updates: Partial<BookingData> = {};
     if (from) {
@@ -147,6 +148,23 @@ export function HomePage() {
       const lng = parseFloat(toLon);
       if (!isNaN(lat) && !isNaN(lng)) updates.toLatLon = { lat, lng };
     }
+
+    // Map vehicle name from marketing site to internal vehicleId
+    if (vehicleParam) {
+      const v = vehicleParam.toLowerCase();
+      let vehicleId: string | undefined;
+      if (v.includes('v-class')) {
+        vehicleId = 'vehicle-van-vclass';
+      } else if (v.includes('eqs')) {
+        vehicleId = 'vehicle-premium-sclass';
+      } else if (v.includes('e-class')) {
+        vehicleId = 'vehicle-standard-eclass';
+      }
+      if (vehicleId) {
+        updates.vehicleId = vehicleId;
+      }
+    }
+
     // Sync the initial time to context so isDirty starts as false
     if (!bookingData.time) {
       updates.time = initialTime;
