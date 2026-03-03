@@ -1,0 +1,12 @@
+User-agent: *
+Disallow: /summary
+Disallow: /checkout
+Disallow: /select-vehicle
+Disallow: /calculate-price
+Disallow: /booking-success
+Disallow: /cancel-booking
+Disallow: /calendar
+Disallow: /ops
+
+Sitemap: https://booking.elegant-limo.ch/sitemap.xml
+
