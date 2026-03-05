@@ -95,8 +95,14 @@ export function findFixedRoute(from: string, to: string): FixedRoute | null {
   const normalizedTo = normalizeLocation(to);
 
   for (const route of FIXED_ROUTES) {
-    const fromMatch = route.from.some((f) => normalizeLocation(f) === normalizedFrom);
-    const toMatch = route.to.some((t) => normalizeLocation(t) === normalizedTo);
+    const fromMatch = route.from.some((f) => {
+      const norm = normalizeLocation(f);
+      return normalizedFrom === norm || normalizedFrom.includes(norm) || norm.includes(normalizedFrom);
+    });
+    const toMatch = route.to.some((t) => {
+      const norm = normalizeLocation(t);
+      return normalizedTo === norm || normalizedTo.includes(norm) || norm.includes(normalizedTo);
+    });
 
     if (fromMatch && toMatch) {
       return route;
@@ -105,8 +111,14 @@ export function findFixedRoute(from: string, to: string): FixedRoute | null {
 
   // Also check reverse direction
   for (const route of FIXED_ROUTES) {
-    const fromMatch = route.to.some((t) => normalizeLocation(t) === normalizedFrom);
-    const toMatch = route.from.some((f) => normalizeLocation(f) === normalizedTo);
+    const fromMatch = route.to.some((t) => {
+      const norm = normalizeLocation(t);
+      return normalizedFrom === norm || normalizedFrom.includes(norm) || norm.includes(normalizedFrom);
+    });
+    const toMatch = route.from.some((f) => {
+      const norm = normalizeLocation(f);
+      return normalizedTo === norm || normalizedTo.includes(norm) || norm.includes(normalizedTo);
+    });
 
     if (fromMatch && toMatch) {
       return route;
