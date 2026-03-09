@@ -46,6 +46,11 @@ function hasAirportKeywordInQuery(query: string): boolean {
   return tokens.some((t) => AIRPORT_KEYWORDS.includes(t));
 }
 
+function isIataQuery(query: string): boolean {
+  const qTrimmed = query.trim();
+  return /^[A-Z]{3}$/i.test(qTrimmed);
+}
+
 function isAirportLikeFeature(feature: any): boolean {
   const name = stripDiacritics(String(feature?.place_name ?? '')).toLowerCase();
   const category = stripDiacritics(String(feature?.properties?.category ?? '')).toLowerCase();
@@ -60,7 +65,7 @@ function scoreMapboxFeature(feature: any, query: string): number {
 
   const qTrimmed = query.trim();
   const qUpper = qTrimmed.toUpperCase();
-  const isIataQuery = /^[A-Z]{3}$/i.test(qTrimmed);
+  const iataLike = isIataQuery(qTrimmed);
 
   const hasAirportKeyword = hasAirportKeywordInQuery(query);
   const isAirportLike = isAirportLikeFeature(feature);
@@ -76,7 +81,7 @@ function scoreMapboxFeature(feature: any, query: string): number {
     score += 15;
   }
 
-  if (isIataQuery && isAirportLike && placeNameUpper.includes(qUpper)) {
+  if (iataLike && isAirportLike && placeNameUpper.includes(qUpper)) {
     score += 20;
   }
 
@@ -122,6 +127,54 @@ export async function searchAddressSwitzerland(query: string): Promise<Nominatim
   // Prefer Mapbox Geocoding when configured
   if (mapboxToken) {
     try {
+      const hasAirportKeyword = hasAirportKeywordInQuery(q);
+      const iataLike = isIataQuery(q);
+
+      // First, try an airport-focused query when intent is clearly airport-related
+      if (hasAirportKeyword || iataLike) {
+        const airportParams = new URLSearchParams({
+          access_token: mapboxToken,
+          autocomplete: 'true',
+          country: 'ch',
+          limit: '8',
+          bbox: MAPBOX_SWISS_BBOX,
+          language: 'en,de,fr,it',
+          types: 'poi',
+          categories: 'airport,airfield',
+        });
+        const airportRes = await fetch(
+          `${MAPBOX_GEOCODING_BASE}/${encodeURIComponent(q)}.json?${airportParams.toString()}`
+        );
+        if (airportRes.ok) {
+          const airportData = await airportRes.json();
+          if (Array.isArray(airportData.features) && airportData.features.length > 0) {
+            const airportRanked = rankMapboxFeatures(airportData.features, q);
+            const airportResults: NominatimResult[] = airportRanked
+              .map((f: any) => {
+                if (!Array.isArray(f.center) || f.center.length < 2) return null;
+                const [lng, lat] = f.center as [number, number];
+                if (typeof lat !== 'number' || typeof lng !== 'number') return null;
+                const placeType =
+                  Array.isArray(f.place_type) && f.place_type.length > 0
+                    ? String(f.place_type[0])
+                    : 'place';
+                return {
+                  display_name: String(f.place_name ?? ''),
+                  lat: String(lat),
+                  lon: String(lng),
+                  type: placeType,
+                } satisfies NominatimResult;
+              })
+              .filter(Boolean);
+
+            if (airportResults.length > 0) {
+              return airportResults;
+            }
+          }
+        }
+      }
+
+      // Generic Swiss address/POI search (previous behaviour, but ranked)
       const params = new URLSearchParams({
         access_token: mapboxToken,
         autocomplete: 'true',
