@@ -22,6 +22,39 @@ const CITY_AIRPORT_HINTS: { city: string; iata: string }[] = [
   { city: 'basel', iata: 'BSL' },
 ];
 
+const SWISS_AIRPORTS: NominatimResult[] = [
+  {
+    display_name: 'Zurich Airport (ZRH), 8302 Kloten, Switzerland',
+    lat: '47.4582',
+    lon: '8.5555',
+    type: 'airport',
+  },
+  {
+    display_name: 'Geneva Airport (GVA), 1215 Genève, Switzerland',
+    lat: '46.2328',
+    lon: '6.1090',
+    type: 'airport',
+  },
+  {
+    display_name: 'EuroAirport Basel-Mulhouse-Freiburg (BSL), 4030 Basel, Switzerland',
+    lat: '47.59',
+    lon: '7.5299',
+    type: 'airport',
+  },
+  {
+    display_name: 'Bern Airport (BRN), 3123 Belp, Switzerland',
+    lat: '46.9120',
+    lon: '7.4998',
+    type: 'airport',
+  },
+  {
+    display_name: 'Lugano Airport (LUG), 6982 Agno, Switzerland',
+    lat: '46.0043',
+    lon: '8.9106',
+    type: 'airport',
+  },
+];
+
 function stripDiacritics(value: string): string {
   return value
     .normalize('NFD')
@@ -49,6 +82,66 @@ function hasAirportKeywordInQuery(query: string): boolean {
 function isIataQuery(query: string): boolean {
   const qTrimmed = query.trim();
   return /^[A-Z]{3}$/i.test(qTrimmed);
+}
+
+function findSwissAirportsForQuery(query: string): NominatimResult[] {
+  const tokens = tokenizeNormalized(query);
+  const hasAirport = tokens.some((t) => AIRPORT_KEYWORDS.includes(t));
+  if (!hasAirport) return [];
+
+  const cityTokens = tokens.filter((t) => !AIRPORT_KEYWORDS.includes(t));
+  if (cityTokens.length === 0) {
+    // Query like just "airport" → show major airports
+    return SWISS_AIRPORTS;
+  }
+
+  const normalizedCityTokens = new Set(cityTokens);
+
+  const matches: NominatimResult[] = [];
+
+  for (const airport of SWISS_AIRPORTS) {
+    const nameNorm = tokenizeNormalized(airport.display_name);
+    const nameSet = new Set(nameNorm);
+
+    const hasCityMatch = [...normalizedCityTokens].some((t) => nameSet.has(t));
+    if (hasCityMatch) {
+      matches.push(airport);
+    }
+  }
+
+  // If nothing matched city specifically, fall back to all airports
+  return matches.length > 0 ? matches : SWISS_AIRPORTS;
+}
+
+function prependSwissAirports(
+  results: NominatimResult[],
+  query: string
+): NominatimResult[] {
+  const airportMatches = findSwissAirportsForQuery(query);
+  if (airportMatches.length === 0) return results;
+
+  const seen = new Set<string>();
+
+  const normalizedKey = (item: NominatimResult) =>
+    `${stripDiacritics(item.display_name).toLowerCase()}|${item.lat}|${item.lon}`;
+
+  const ordered: NominatimResult[] = [];
+
+  for (const a of airportMatches) {
+    const key = normalizedKey(a);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    ordered.push(a);
+  }
+
+  for (const r of results) {
+    const key = normalizedKey(r);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    ordered.push(r);
+  }
+
+  return ordered.slice(0, 8);
 }
 
 function isAirportLikeFeature(feature: any): boolean {
@@ -208,7 +301,7 @@ export async function searchAddressSwitzerland(query: string): Promise<Nominatim
               } satisfies NominatimResult;
             })
             .filter(Boolean);
-          if (results.length > 0) return results;
+          if (results.length > 0) return prependSwissAirports(results, q);
         }
       }
     } catch {
@@ -255,7 +348,8 @@ export async function searchAddressSwitzerland(query: string): Promise<Nominatim
     }
   }
 
-  return [...withAirport, ...withoutAirport];
+  const combined: NominatimResult[] = [...withAirport, ...withoutAirport];
+  return prependSwissAirports(combined, q);
 }
 
 /**
