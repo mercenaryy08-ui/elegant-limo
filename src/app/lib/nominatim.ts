@@ -10,6 +10,102 @@ import { getMapboxAccessToken, MAPBOX_SWISS_BBOX } from './mapbox-config';
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 const MAPBOX_GEOCODING_BASE = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
 
+const AIRPORT_KEYWORDS = ['airport', 'flughafen', 'aeroport', 'aéroport', 'aeroporto'];
+
+const CITY_AIRPORT_HINTS: { city: string; iata: string }[] = [
+  { city: 'zurich', iata: 'ZRH' },
+  { city: 'zuerich', iata: 'ZRH' },
+  { city: 'zürich', iata: 'ZRH' },
+  { city: 'geneva', iata: 'GVA' },
+  { city: 'genf', iata: 'GVA' },
+  { city: 'genève', iata: 'GVA' },
+  { city: 'basel', iata: 'BSL' },
+];
+
+function stripDiacritics(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/Ä/g, 'Ae')
+    .replace(/Ö/g, 'Oe')
+    .replace(/Ü/g, 'Ue');
+}
+
+function tokenizeNormalized(value: string): string[] {
+  return stripDiacritics(value)
+    .toLowerCase()
+    .split(/[\s,;]+/)
+    .filter(Boolean);
+}
+
+function hasAirportKeywordInQuery(query: string): boolean {
+  const tokens = tokenizeNormalized(query);
+  return tokens.some((t) => AIRPORT_KEYWORDS.includes(t));
+}
+
+function isAirportLikeFeature(feature: any): boolean {
+  const name = stripDiacritics(String(feature?.place_name ?? '')).toLowerCase();
+  const category = stripDiacritics(String(feature?.properties?.category ?? '')).toLowerCase();
+  return AIRPORT_KEYWORDS.some(
+    (kw) => name.includes(kw) || (category && category.includes(kw))
+  );
+}
+
+function scoreMapboxFeature(feature: any, query: string): number {
+  const baseRelevance = typeof feature?.relevance === 'number' ? feature.relevance : 0;
+  let score = baseRelevance * 10;
+
+  const qTrimmed = query.trim();
+  const qUpper = qTrimmed.toUpperCase();
+  const isIataQuery = /^[A-Z]{3}$/i.test(qTrimmed);
+
+  const hasAirportKeyword = hasAirportKeywordInQuery(query);
+  const isAirportLike = isAirportLikeFeature(feature);
+
+  const normalizedQueryTokens = tokenizeNormalized(query);
+  const cityTokens = normalizedQueryTokens.filter((t) => !AIRPORT_KEYWORDS.includes(t));
+
+  const placeName = String(feature?.place_name ?? '');
+  const placeNameUpper = placeName.toUpperCase();
+  const placeNameNorm = stripDiacritics(placeName).toLowerCase();
+
+  if (hasAirportKeyword && isAirportLike) {
+    score += 15;
+  }
+
+  if (isIataQuery && isAirportLike && placeNameUpper.includes(qUpper)) {
+    score += 20;
+  }
+
+  for (const hint of CITY_AIRPORT_HINTS) {
+    const hasCityInQuery = cityTokens.includes(hint.city);
+    if (!hasCityInQuery) continue;
+
+    if (isAirportLike && placeNameUpper.includes(hint.iata)) {
+      score += 20;
+    } else if (isAirportLike && placeNameNorm.includes(hint.city)) {
+      score += 12;
+    }
+  }
+
+  return score;
+}
+
+function rankMapboxFeatures(features: any[], query: string): any[] {
+  if (!Array.isArray(features) || features.length === 0) return [];
+
+  return features
+    .map((f) => ({
+      feature: f,
+      score: scoreMapboxFeature(f, query),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .map((item) => item.feature);
+}
+
 export interface NominatimResult {
   display_name: string;
   lat: string;
@@ -41,7 +137,8 @@ export async function searchAddressSwitzerland(query: string): Promise<Nominatim
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data.features)) {
-          const results: NominatimResult[] = data.features
+          const rankedFeatures = rankMapboxFeatures(data.features, q);
+          const results: NominatimResult[] = rankedFeatures
             .map((f: any) => {
               if (!Array.isArray(f.center) || f.center.length < 2) return null;
               const [lng, lat] = f.center as [number, number];
@@ -84,7 +181,28 @@ export async function searchAddressSwitzerland(query: string): Promise<Nominatim
   });
   if (!res.ok) return [];
   const data = await res.json();
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) return [];
+
+  const hasAirportKeyword = hasAirportKeywordInQuery(q);
+
+  if (!hasAirportKeyword) {
+    return data;
+  }
+
+  const withAirport: any[] = [];
+  const withoutAirport: any[] = [];
+
+  for (const item of data) {
+    const name = stripDiacritics(String(item?.display_name ?? '')).toLowerCase();
+    const isAirportLike = AIRPORT_KEYWORDS.some((kw) => name.includes(kw));
+    if (isAirportLike) {
+      withAirport.push(item);
+    } else {
+      withoutAirport.push(item);
+    }
+  }
+
+  return [...withAirport, ...withoutAirport];
 }
 
 /**
